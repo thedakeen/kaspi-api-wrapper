@@ -1,0 +1,1 @@
+module kaspi-api-wrapper
