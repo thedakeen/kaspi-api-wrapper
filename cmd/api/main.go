@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 )
 
 var (
@@ -21,7 +20,7 @@ func main() {
 		Level: slog.LevelDebug,
 	}))
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	wg.Add(1)
