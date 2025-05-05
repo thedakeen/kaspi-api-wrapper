@@ -4,6 +4,7 @@ import (
 	"context"
 	"kaspi-api-wrapper/internal/api/handlers"
 	"kaspi-api-wrapper/internal/app"
+	"kaspi-api-wrapper/internal/config"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -16,6 +17,8 @@ var (
 )
 
 func main() {
+	cfg := config.MustLoad()
+
 	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
 	}))
@@ -29,13 +32,11 @@ func main() {
 
 	h := handlers.NewHandlers(log)
 
-	application := app.New(log, 8080, h)
+	application := app.New(log, cfg.HTTPPort, h)
 
-	// Handle graceful shutdown
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
-	// Start application in a goroutine
 	go func() {
 		defer wg.Done()
 		if err := application.HTTPSrv.Run(ctx); err != nil {
