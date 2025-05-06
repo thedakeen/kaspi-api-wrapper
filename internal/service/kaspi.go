@@ -112,6 +112,8 @@ func (s *KaspiService) request(ctx context.Context, method, path string, body, r
 	return nil
 }
 
+//////// 	Device service methods	////////
+
 // GetTradePoints retrieves list of trade points from Kaspi API (2.2.2)
 func (s *KaspiService) GetTradePoints(ctx context.Context) ([]domain.TradePoint, error) {
 	const op = "service.kaspi.GetTradePoints"
@@ -186,3 +188,80 @@ func (s *KaspiService) DeleteDevice(ctx context.Context, deviceToken string) err
 
 	return nil
 }
+
+//////// 	End of device service methods	////////
+
+func (s *KaspiService) CreateQR(ctx context.Context, req domain.QRCreateRequest) (*domain.QRCreateResponse, error) {
+	const op = "service.kaspi.CreateQR"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("deviceToken", req.DeviceToken),
+		slog.Float64("amount", req.Amount),
+	)
+
+	log.Debug("creating QR token for payment")
+
+	path := "/qr/create"
+
+	var result domain.QRCreateResponse
+	err := s.request(ctx, http.MethodPost, path, req, &result)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Debug("QR token created successfully")
+
+	return &result, nil
+}
+
+// CreatePaymentLink creates a payment link (2.3.2)
+func (s *KaspiService) CreatePaymentLink(ctx context.Context, req domain.PaymentLinkCreateRequest) (*domain.PaymentLinkCreateResponse, error) {
+	const op = "service.kaspi.CreatePaymentLink"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("deviceToken", req.DeviceToken),
+		slog.Float64("amount", req.Amount),
+	)
+
+	log.Debug("creating payment link")
+
+	path := "/qr/create-link"
+
+	var result domain.PaymentLinkCreateResponse
+	err := s.request(ctx, http.MethodPost, path, req, &result)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Debug("payment link created successfully")
+
+	return &result, nil
+}
+
+// GetPaymentStatus retrieves the status of a payment (2.3.3)
+func (s *KaspiService) GetPaymentStatus(ctx context.Context, qrPaymentID int64) (*domain.PaymentStatusResponse, error) {
+	const op = "service.kaspi.GetPaymentStatus"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.Int64("qrPaymentID", qrPaymentID),
+	)
+
+	log.Debug("getting payment status")
+
+	path := fmt.Sprintf("/payment/status/%d", qrPaymentID)
+
+	var result domain.PaymentStatusResponse
+	err := s.request(ctx, http.MethodGet, path, nil, &result)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Debug("payment status retrieved successfully", "status", result.Status)
+
+	return &result, nil
+}
+
+//////// 	Payment service	methods	////////
