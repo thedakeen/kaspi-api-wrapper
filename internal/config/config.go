@@ -8,6 +8,12 @@ import (
 
 type Config struct {
 	HTTPPort int `env:"HTTP_PORT"`
+	KaspiAPI KaspiAPI
+}
+
+type KaspiAPI struct {
+	BaseURL string `env:"KASPI_API_BASE_URL"`
+	ApiKey  string `env:"KASPI_API_KEY"`
 }
 
 var (

@@ -5,6 +5,7 @@ import (
 	"kaspi-api-wrapper/internal/api/handlers"
 	"kaspi-api-wrapper/internal/app"
 	"kaspi-api-wrapper/internal/config"
+	"kaspi-api-wrapper/internal/service"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -30,7 +31,13 @@ func main() {
 
 	log.Debug("debug enabled")
 
-	h := handlers.NewHandlers(log)
+	kaspiService := service.NewKaspiService(
+		log,
+		cfg.KaspiAPI.BaseURL,
+		cfg.KaspiAPI.ApiKey,
+	)
+
+	h := handlers.NewHandlers(log, kaspiService)
 
 	application := app.New(log, cfg.HTTPPort, h)
 
