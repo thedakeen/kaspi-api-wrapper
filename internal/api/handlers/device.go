@@ -13,7 +13,7 @@ type DeviceProvider interface {
 }
 
 // AllTradePoints handles retrieving trade points (2.2.2)
-func (h *Handlers) AllTradePoints(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetTradePoints(w http.ResponseWriter, r *http.Request) {
 	tradePoints, err := h.deviceProvider.GetTradePoints(r.Context())
 	if err != nil {
 		h.log.Error("failed to get trade points", err)
