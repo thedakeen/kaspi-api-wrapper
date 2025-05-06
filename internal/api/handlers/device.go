@@ -12,7 +12,7 @@ type DeviceProvider interface {
 	DeleteDevice(ctx context.Context, deviceToken string) error
 }
 
-// AllTradePoints handles retrieving trade points (2.2.2)
+// GetTradePoints handles retrieving trade points (2.2.2)
 func (h *Handlers) GetTradePoints(w http.ResponseWriter, r *http.Request) {
 	tradePoints, err := h.deviceProvider.GetTradePoints(r.Context())
 	if err != nil {

@@ -16,8 +16,9 @@ type Response struct {
 
 // Handlers contains all HTTP handlers for the API
 type Handlers struct {
-	log            *slog.Logger
-	deviceProvider DeviceProvider
+	log             *slog.Logger
+	deviceProvider  DeviceProvider
+	paymentProvider PaymentProvider
 	//kaspiSvc *service.KaspiService
 }
 
@@ -25,10 +26,12 @@ type Handlers struct {
 func NewHandlers(
 	log *slog.Logger,
 	deviceProvider DeviceProvider,
+	paymentProvider PaymentProvider,
 ) *Handlers {
 	return &Handlers{
-		log:            log,
-		deviceProvider: deviceProvider,
+		log:             log,
+		deviceProvider:  deviceProvider,
+		paymentProvider: paymentProvider,
 		//kaspiSvc: kaspiSvc,
 	}
 }

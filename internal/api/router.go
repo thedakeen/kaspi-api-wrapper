@@ -39,6 +39,15 @@ func (r *Router) Setup() *chi.Mux {
 
 		// 2.2.4 - Delete device
 		apiRouter.Post("/device/delete", r.handlers.DeleteDevice)
+
+		// 2.3.1 - Create QR code
+		apiRouter.Post("/qr/create", r.handlers.CreateQR)
+
+		// 2.3.2 - Create payment link
+		apiRouter.Post("/qr/create-link", r.handlers.CreatePaymentLink)
+
+		// 2.3.3 - Get payment status
+		apiRouter.Get("/payment/status/{qrPaymentId}", r.handlers.GetPaymentStatus)
 	})
 
 	return router
