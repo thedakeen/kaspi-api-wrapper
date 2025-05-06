@@ -64,7 +64,7 @@ func (h *Handlers) CreatePaymentLink(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.paymentProvider.CreatePaymentLink(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to create payment link", "error", err)
+		h.log.Error("failed to create payment link", err)
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -86,7 +86,7 @@ func (h *Handlers) GetPaymentStatus(w http.ResponseWriter, r *http.Request) {
 
 	status, err := h.paymentProvider.GetPaymentStatus(r.Context(), qrPaymentID)
 	if err != nil {
-		h.log.Error("failed to get payment status", "error", err)
+		h.log.Error("failed to get payment status", err)
 		HandleKaspiError(w, err, h.log)
 		return
 	}

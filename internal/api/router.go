@@ -48,6 +48,20 @@ func (r *Router) Setup() *chi.Mux {
 
 		// 2.3.3 - Get payment status
 		apiRouter.Get("/payment/status/{qrPaymentId}", r.handlers.GetPaymentStatus)
+
+		router.Route("/test", func(apiRouter chi.Router) {
+			// 5.2 - Test QR scan
+			apiRouter.Post("/payment/scan", r.handlers.TestScanQR)
+
+			// 5.3 - Test payment confirmation
+			apiRouter.Post("/payment/confirm", r.handlers.TestConfirmPayment)
+
+			// 5.4 - Test QR scan error
+			apiRouter.Post("/payment/scanerror", r.handlers.TestScanError)
+
+			// 5.5 - Test payment confirmation error
+			apiRouter.Post("/payment/confirmerror", r.handlers.TestConfirmError)
+		})
 	})
 
 	return router
