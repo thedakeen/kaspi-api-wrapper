@@ -17,7 +17,7 @@ func (h *Handlers) AllTradePoints(w http.ResponseWriter, r *http.Request) {
 	tradePoints, err := h.deviceProvider.GetTradePoints(r.Context())
 	if err != nil {
 		h.log.Error("failed to get trade points", err)
-		InternalServerError(w, "Failed to get trade points")
+		HandleKaspiError(w, err, h.log)
 		return
 	}
 
@@ -47,7 +47,7 @@ func (h *Handlers) RegisterDevice(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.deviceProvider.RegisterDevice(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to register device", err)
-		InternalServerError(w, "failed to register device")
+		HandleKaspiError(w, err, h.log)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (h *Handlers) DeleteDevice(w http.ResponseWriter, r *http.Request) {
 	err := h.deviceProvider.DeleteDevice(r.Context(), req.DeviceToken)
 	if err != nil {
 		h.log.Error("failed to delete device", err)
-		InternalServerError(w, "failed to delete device")
+		HandleKaspiError(w, err, h.log)
 		return
 	}
 

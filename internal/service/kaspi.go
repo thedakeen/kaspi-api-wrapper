@@ -87,11 +87,14 @@ func (s *KaspiService) request(ctx context.Context, method, path string, body, r
 	var baseResp domain.BaseResponse
 	err = json.Unmarshal(respBody, &baseResp)
 	if err != nil {
-		return fmt.Errorf("%s:%w", op, err)
+		return fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	if baseResp.StatusCode != 0 {
-		return fmt.Errorf("API error: %d - %s", baseResp.StatusCode, baseResp.Message)
+		return &domain.KaspiError{
+			StatusCode: baseResp.StatusCode,
+			Message:    baseResp.Message,
+		}
 	}
 
 	if result != nil && baseResp.Data != nil {
