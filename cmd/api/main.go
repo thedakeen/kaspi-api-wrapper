@@ -33,13 +33,16 @@ func main() {
 
 	kaspiService := service.NewKaspiService(
 		log,
-		cfg.KaspiAPI.BaseURL,
+		cfg.KaspiAPI.Scheme,
+		cfg.KaspiAPI.BaseURLBasic,
+		cfg.KaspiAPI.BaseURLStd,
+		cfg.KaspiAPI.BaseURLEnh,
 		cfg.KaspiAPI.ApiKey,
 	)
 
-	h := handlers.NewHandlers(log, kaspiService, kaspiService, kaspiService)
+	h := handlers.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
 
-	application := app.New(log, cfg.HTTPPort, h)
+	application := app.New(log, cfg.HTTPPort, h, cfg.KaspiAPI.Scheme)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)

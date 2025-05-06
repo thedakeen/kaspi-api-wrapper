@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
-	"log"
 )
 
 type Config struct {
@@ -12,8 +11,11 @@ type Config struct {
 }
 
 type KaspiAPI struct {
-	BaseURL string `env:"KASPI_API_BASE_URL"`
-	ApiKey  string `env:"KASPI_API_KEY"`
+	Scheme       string `env:"KASPI_API_SCHEME" env-default:"basic"`
+	BaseURLBasic string `env:"KASPI_API_BASE_URL_BASIC"`
+	BaseURLStd   string `env:"KASPI_API_BASE_URL_STANDARD"`
+	BaseURLEnh   string `env:"KASPI_API_BASE_URL_ENHANCED"`
+	ApiKey       string `env:"KASPI_API_KEY"`
 }
 
 var (
@@ -23,7 +25,7 @@ var (
 func MustLoad() *Config {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Println("Warning: .env file not found or failed to load")
+		panic("failed to load .env file" + err.Error())
 	}
 
 	cfg = &Config{}

@@ -11,12 +11,14 @@ import (
 type Router struct {
 	log      *slog.Logger
 	handlers *handlers.Handlers
+	scheme   string
 }
 
-func NewRouter(log *slog.Logger, handlers *handlers.Handlers) *Router {
+func NewRouter(log *slog.Logger, handlers *handlers.Handlers, scheme string) *Router {
 	return &Router{
 		log:      log,
 		handlers: handlers,
+		scheme:   scheme,
 	}
 }
 
@@ -25,7 +27,7 @@ func (r *Router) Setup() *chi.Mux {
 
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
-	router.Use(custommw.Logger)
+	router.Use(custommw.Logger(r.log))
 	router.Use(middleware.Recoverer)
 
 	router.Get("/health", r.handlers.HealthCheck)
@@ -49,7 +51,42 @@ func (r *Router) Setup() *chi.Mux {
 		// 2.3.3 - Get payment status
 		apiRouter.Get("/payment/status/{qrPaymentId}", r.handlers.GetPaymentStatus)
 
+		// Standard scheme endpoints (available in standard and enhanced schemes)
+		standardScheme := custommw.SchemeMiddleware(r.scheme, "standard")
+
+		// 3.4.1 - Create refund QR code
+		apiRouter.With(standardScheme).Post("/return/create", r.handlers.CreateRefundQR)
+
+		// 3.4.2 - Get refund status
+		apiRouter.With(standardScheme).Get("/return/status/{qrReturnId}", r.handlers.GetRefundStatus)
+
+		// 3.4.3 - Get customer operations
+		apiRouter.With(standardScheme).Post("/return/operations", r.handlers.GetCustomerOperations)
+
+		// 3.4.4 - Get payment details
+		apiRouter.With(standardScheme).Get("/payment/details", r.handlers.GetPaymentDetails)
+
+		// 3.4.5 - Refund payment
+		apiRouter.With(standardScheme).Post("/payment/return", r.handlers.RefundPayment)
+
+		enhancedScheme := custommw.SchemeMiddleware(r.scheme, "enhanced")
+
+		// 4.5 - Enhanced refund payment (without customer)
+		apiRouter.With(enhancedScheme).Post("/enhanced/payment/return", r.handlers.RefundPaymentEnhanced)
+
+		// 4.6.1 - Get client info by phone number
+		apiRouter.With(enhancedScheme).Get("/remote/client-info", r.handlers.GetClientInfo)
+
+		// 4.6.2 - Create remote payment
+		apiRouter.With(enhancedScheme).Post("/remote/create", r.handlers.CreateRemotePayment)
+
+		// 4.6.3 - Cancel remote payment
+		apiRouter.With(enhancedScheme).Post("/remote/cancel", r.handlers.CancelRemotePayment)
+
 		router.Route("/test", func(apiRouter chi.Router) {
+			// 5.1 - Healthcheck
+			apiRouter.Get("/health", r.handlers.HealthCheckKaspi)
+
 			// 5.2 - Test QR scan
 			apiRouter.Post("/payment/scan", r.handlers.TestScanQR)
 

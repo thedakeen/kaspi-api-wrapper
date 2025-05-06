@@ -16,13 +16,15 @@ type App struct {
 	httpPort int
 	server   *http.Server
 	handlers *handlers.Handlers
+	scheme   string
 }
 
-func New(log *slog.Logger, httpPort int, handlers *handlers.Handlers) *App {
+func New(log *slog.Logger, httpPort int, handlers *handlers.Handlers, scheme string) *App {
 	return &App{
 		log:      log,
 		httpPort: httpPort,
 		handlers: handlers,
+		scheme:   scheme,
 	}
 }
 
@@ -34,7 +36,7 @@ func (app *App) Run(ctx context.Context) error {
 		slog.Int("port", app.httpPort),
 	)
 
-	router := api.NewRouter(app.log, app.handlers)
+	router := api.NewRouter(app.log, app.handlers, app.scheme)
 	r := router.Setup()
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", app.httpPort))
