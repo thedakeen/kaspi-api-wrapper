@@ -12,13 +12,17 @@ import (
 	"time"
 )
 
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 type KaspiService struct {
 	log          *slog.Logger
 	scheme       string
 	baseURLBasic string
 	baseURLStd   string
 	baseURLEnh   string
-	httpClient   *http.Client
+	httpClient   HTTPClient
 	apiKey       string
 }
 
@@ -71,8 +75,13 @@ func generateRequestID() string {
 	return fmt.Sprintf("%d", time.Now().UnixNano())
 }
 
-// getBaseUrl retrieves the base URL based on the current scheme
-func (s *KaspiService) getBaseURL() string {
+// SetHTTPClient sets the HTTP client for testing
+func (s *KaspiService) SetHTTPClient(client HTTPClient) {
+	s.httpClient = client
+}
+
+// GetBaseURL retrieves the base URL based on the current scheme
+func (s *KaspiService) GetBaseURL() string {
 	switch s.scheme {
 	case "basic":
 		return s.baseURLBasic
@@ -85,11 +94,11 @@ func (s *KaspiService) getBaseURL() string {
 	}
 }
 
-// request makes a general request to the Kaspi API
-func (s *KaspiService) request(ctx context.Context, method, path string, body, result any) error {
+// Request makes a general request to the Kaspi API, exposed method for testing
+func (s *KaspiService) Request(ctx context.Context, method, path string, body, result any) error {
 	const op = "service.kaspi.request"
 
-	url := s.getBaseURL() + path
+	url := s.GetBaseURL() + path
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -160,6 +169,11 @@ func (s *KaspiService) request(ctx context.Context, method, path string, body, r
 	}
 
 	return nil
+}
+
+// request makes a general request to the Kaspi API
+func (s *KaspiService) request(ctx context.Context, method, path string, body, result any) error {
+	return s.Request(ctx, method, path, body, result)
 }
 
 //////// 	Device service methods	////////

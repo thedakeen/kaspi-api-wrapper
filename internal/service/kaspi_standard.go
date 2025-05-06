@@ -61,7 +61,7 @@ func (s *KaspiService) GetRefundStatus(ctx context.Context, qrReturnID int64) (*
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	log.Debug("refund status retrieved successfully", result.Status)
+	log.Debug("customer operations retrieved successfully", "status", result.Status)
 
 	return &result, nil
 }
@@ -90,7 +90,7 @@ func (s *KaspiService) GetCustomerOperations(ctx context.Context, req domain.Cus
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	log.Debug("customer operations retrieved successfully", len(result))
+	log.Debug("customer operations retrieved successfully", "count", len(result))
 
 	return result, nil
 }
