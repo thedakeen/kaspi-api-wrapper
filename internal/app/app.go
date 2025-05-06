@@ -11,8 +11,8 @@ type App struct {
 	Handlers *handlers.Handlers
 }
 
-func New(log *slog.Logger, httpPort int, handlers *handlers.Handlers) *App {
-	httpApp := http.New(log, httpPort, handlers)
+func New(log *slog.Logger, httpPort int, handlers *handlers.Handlers, scheme string) *App {
+	httpApp := http.New(log, httpPort, handlers, scheme)
 
 	return &App{
 		httpApp,

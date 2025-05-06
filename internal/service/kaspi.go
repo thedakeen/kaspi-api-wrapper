@@ -13,22 +13,56 @@ import (
 )
 
 type KaspiService struct {
-	log        *slog.Logger
-	baseURL    string
-	httpClient *http.Client
-	apiKey     string
+	log          *slog.Logger
+	scheme       string
+	baseURLBasic string
+	baseURLStd   string
+	baseURLEnh   string
+	httpClient   *http.Client
+	apiKey       string
 }
 
-func NewKaspiService(log *slog.Logger, baseURL string, apiKey string) *KaspiService {
-	httpClient := &http.Client{
-		Timeout: 30 * time.Second,
+func NewKaspiService(log *slog.Logger,
+	scheme string,
+	baseURLBasic string,
+	baseURLStd string,
+	baseURLEnh string,
+	apiKey string,
+) *KaspiService {
+	var httpClient *http.Client
+
+	switch scheme {
+	case "basic":
+		httpClient = &http.Client{
+			Timeout: 30 * time.Second,
+		}
+	case "standard", "enhanced":
+		//cert, err := tls.LoadX509KeyPair(certFile, certFile)
+		//if err != nil {
+		//	log.Error("failed to load certificate", "error", err)
+		//	httpClient = &http.Client{Timeout: 30 * time.Second}
+		//} else {
+		//	tlsConfig := &tls.Config{
+		//		Certificates: []tls.Certificate{cert},
+		//	}
+		//	transport := &http.Transport{TLSClientConfig: tlsConfig}
+		//	httpClient = &http.Client{
+		//		Transport: transport,
+		//		Timeout:   30 * time.Second,
+		//	}
+		//}
+	default:
+		httpClient = &http.Client{Timeout: 30 * time.Second}
 	}
 
 	return &KaspiService{
-		log:        log,
-		baseURL:    baseURL,
-		httpClient: httpClient,
-		apiKey:     apiKey,
+		log:          log,
+		scheme:       scheme,
+		baseURLBasic: baseURLBasic,
+		baseURLStd:   baseURLStd,
+		baseURLEnh:   baseURLEnh,
+		httpClient:   httpClient,
+		apiKey:       apiKey,
 	}
 }
 
@@ -37,11 +71,25 @@ func generateRequestID() string {
 	return fmt.Sprintf("%d", time.Now().UnixNano())
 }
 
+// getBaseUrl retrieves the base URL based on the current scheme
+func (s *KaspiService) getBaseURL() string {
+	switch s.scheme {
+	case "basic":
+		return s.baseURLBasic
+	case "standard":
+		return s.baseURLStd
+	case "enhanced":
+		return s.baseURLEnh
+	default:
+		return s.baseURLBasic
+	}
+}
+
 // request makes a general request to the Kaspi API
 func (s *KaspiService) request(ctx context.Context, method, path string, body, result any) error {
 	const op = "service.kaspi.request"
 
-	url := s.baseURL + path
+	url := s.getBaseURL() + path
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -67,7 +115,9 @@ func (s *KaspiService) request(ctx context.Context, method, path string, body, r
 	req.Header.Set("X-Request-ID", generateRequestID())
 
 	// Api-Key for request via first scheme
-	req.Header.Set("Api-Key", s.apiKey)
+	if s.scheme == "basic" {
+		req.Header.Set("Api-Key", s.apiKey)
+	}
 
 	log.Debug("sending request")
 
@@ -191,6 +241,8 @@ func (s *KaspiService) DeleteDevice(ctx context.Context, deviceToken string) err
 
 //////// 	End of device service methods	////////
 
+//////// 	Payment service	methods	////////
+
 func (s *KaspiService) CreateQR(ctx context.Context, req domain.QRCreateRequest) (*domain.QRCreateResponse, error) {
 	const op = "service.kaspi.CreateQR"
 
@@ -264,4 +316,4 @@ func (s *KaspiService) GetPaymentStatus(ctx context.Context, qrPaymentID int64) 
 	return &result, nil
 }
 
-//////// 	Payment service	methods	////////
+//////// 	End of payment service	methods	////////
