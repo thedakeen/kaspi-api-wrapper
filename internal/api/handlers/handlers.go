@@ -64,6 +64,26 @@ func InternalServerError(w http.ResponseWriter, message string) {
 	respondError(w, http.StatusInternalServerError, message)
 }
 
+func NotFoundError(w http.ResponseWriter, message string) {
+	respondError(w, http.StatusNotFound, message)
+}
+
+func ConflictError(w http.ResponseWriter, message string) {
+	respondError(w, http.StatusConflict, message)
+}
+
+func ForbiddenError(w http.ResponseWriter, message string) {
+	respondError(w, http.StatusForbidden, message)
+}
+
+func ServiceUnavailableError(w http.ResponseWriter, message string) {
+	respondError(w, http.StatusServiceUnavailable, message)
+}
+
+func UnauthorizedError(w http.ResponseWriter, message string) {
+	respondError(w, http.StatusUnauthorized, message)
+}
+
 // DecodeJSONRequest returns Bad Request status in case of invalid data
 func DecodeJSONRequest(w http.ResponseWriter, r *http.Request, dst interface{}) bool {
 	contentType := r.Header.Get("Content-Type")
