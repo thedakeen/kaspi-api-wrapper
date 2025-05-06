@@ -19,6 +19,7 @@ type Handlers struct {
 	log             *slog.Logger
 	deviceProvider  DeviceProvider
 	paymentProvider PaymentProvider
+	utilityProvider UtilityProvider
 	//kaspiSvc *service.KaspiService
 }
 
@@ -27,11 +28,13 @@ func NewHandlers(
 	log *slog.Logger,
 	deviceProvider DeviceProvider,
 	paymentProvider PaymentProvider,
+	utilityProvider UtilityProvider,
 ) *Handlers {
 	return &Handlers{
 		log:             log,
 		deviceProvider:  deviceProvider,
 		paymentProvider: paymentProvider,
+		utilityProvider: utilityProvider,
 		//kaspiSvc: kaspiSvc,
 	}
 }
