@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"github.com/go-chi/chi/v5"
 	"kaspi-api-wrapper/internal/domain"
 	"net/http"
 )
@@ -14,7 +15,7 @@ type DeviceEnhancedProvider interface {
 
 // GetTradePointsEnhanced handles a request to get trade points in the enhanced scheme (4.2.2)
 func (h *Handlers) GetTradePointsEnhanced(w http.ResponseWriter, r *http.Request) {
-	organizationBin := r.URL.Query().Get("organizationBin")
+	organizationBin := chi.URLParam(r, "organizationBin")
 	if organizationBin == "" {
 		BadRequestError(w, "OrganizationBin is required")
 		return
