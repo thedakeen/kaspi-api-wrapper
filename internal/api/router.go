@@ -71,6 +71,21 @@ func (r *Router) Setup() *chi.Mux {
 
 		enhancedScheme := custommw.SchemeMiddleware(r.scheme, "enhanced")
 
+		// 4.2.2 - Get trade points (enhanced)
+		apiRouter.With(enhancedScheme).Get("/tradepoints/enhanced", r.handlers.GetTradePointsEnhanced)
+
+		// 4.2.3 - Register device (enhanced)
+		apiRouter.With(enhancedScheme).Post("/device/register/enhanced", r.handlers.RegisterDeviceEnhanced)
+
+		// 4.2.4 - Delete device (enhanced)
+		apiRouter.With(enhancedScheme).Post("/device/delete/enhanced", r.handlers.DeleteDeviceEnhanced)
+
+		// 4.3.1 - Create QR code (enhanced)
+		apiRouter.With(enhancedScheme).Post("/qr/create/enhanced", r.handlers.CreateQREnhanced)
+
+		// 4.3.2 - Create payment link (enhanced)
+		apiRouter.With(enhancedScheme).Post("/qr/create-link/enhanced", r.handlers.CreatePaymentLinkEnhanced)
+
 		// 4.5 - Enhanced refund payment (without customer)
 		apiRouter.With(enhancedScheme).Post("/enhanced/payment/return", r.handlers.RefundPaymentEnhanced)
 

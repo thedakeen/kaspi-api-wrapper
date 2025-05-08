@@ -40,7 +40,7 @@ func main() {
 		cfg.KaspiAPI.ApiKey,
 	)
 
-	h := handlers.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
+	h := handlers.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
 
 	application := app.New(log, cfg.HTTPPort, h, cfg.KaspiAPI.Scheme)
 

@@ -1,0 +1,82 @@
+package handlers
+
+import (
+	"context"
+	"kaspi-api-wrapper/internal/domain"
+	"net/http"
+)
+
+type PaymentEnhancedProvider interface {
+	CreateQREnhanced(ctx context.Context, req domain.EnhancedQRCreateRequest) (*domain.QRCreateResponse, error)
+	CreatePaymentLinkEnhanced(ctx context.Context, req domain.EnhancedPaymentLinkCreateRequest) (*domain.PaymentLinkCreateResponse, error)
+}
+
+// CreateQREnhanced handles a request to create a QR in the enhanced scheme (4.3.1)
+func (h *Handlers) CreateQREnhanced(w http.ResponseWriter, r *http.Request) {
+	var req domain.EnhancedQRCreateRequest
+	if !DecodeJSONRequest(w, r, &req) {
+		return
+	}
+
+	if req.DeviceToken == "" {
+		BadRequestError(w, "DeviceToken is required")
+		return
+	}
+
+	if req.Amount <= 0 {
+		BadRequestError(w, "Amount must be greater than zero")
+		return
+	}
+
+	if req.OrganizationBin == "" {
+		BadRequestError(w, "OrganizationBin is required")
+		return
+	}
+
+	resp, err := h.paymentEnhancedProvider.CreateQREnhanced(r.Context(), req)
+	if err != nil {
+		h.log.Error("failed to create QR (enhanced)", err)
+		HandleKaspiError(w, err, h.log)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, Response{
+		Success: true,
+		Data:    resp,
+	})
+}
+
+// CreatePaymentLinkEnhanced handles a request to create a payment link in the enhanced scheme (4.3.2)
+func (h *Handlers) CreatePaymentLinkEnhanced(w http.ResponseWriter, r *http.Request) {
+	var req domain.EnhancedPaymentLinkCreateRequest
+	if !DecodeJSONRequest(w, r, &req) {
+		return
+	}
+
+	if req.DeviceToken == "" {
+		BadRequestError(w, "DeviceToken is required")
+		return
+	}
+
+	if req.Amount <= 0 {
+		BadRequestError(w, "Amount must be greater than zero")
+		return
+	}
+
+	if req.OrganizationBin == "" {
+		BadRequestError(w, "OrganizationBin is required")
+		return
+	}
+
+	resp, err := h.paymentEnhancedProvider.CreatePaymentLinkEnhanced(r.Context(), req)
+	if err != nil {
+		h.log.Error("failed to create payment link (enhanced)", err)
+		HandleKaspiError(w, err, h.log)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, Response{
+		Success: true,
+		Data:    resp,
+	})
+}
