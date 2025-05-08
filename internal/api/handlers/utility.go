@@ -18,7 +18,7 @@ type UtilityProvider interface {
 func (h *Handlers) HealthCheckKaspi(w http.ResponseWriter, r *http.Request) {
 	err := h.utilityProvider.HealthCheck(r.Context())
 	if err != nil {
-		h.log.Error("health check failed", err)
+		h.log.Error("health check failed", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -45,7 +45,7 @@ func (h *Handlers) TestScanQR(w http.ResponseWriter, r *http.Request) {
 
 	err := h.utilityProvider.TestScanQR(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to simulate QR scan", err)
+		h.log.Error("failed to simulate QR scan", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -72,7 +72,7 @@ func (h *Handlers) TestConfirmPayment(w http.ResponseWriter, r *http.Request) {
 
 	err := h.utilityProvider.TestConfirmPayment(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to simulate payment confirmation", err)
+		h.log.Error("failed to simulate payment confirmation", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -99,7 +99,7 @@ func (h *Handlers) TestScanError(w http.ResponseWriter, r *http.Request) {
 
 	err := h.utilityProvider.TestScanError(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to simulate QR scan error", err)
+		h.log.Error("failed to simulate QR scan error", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -126,7 +126,7 @@ func (h *Handlers) TestConfirmError(w http.ResponseWriter, r *http.Request) {
 
 	err := h.utilityProvider.TestConfirmError(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to simulate payment confirmation error", err)
+		h.log.Error("failed to simulate payment confirmation error", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
