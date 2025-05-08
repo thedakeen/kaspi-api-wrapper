@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+var (
+	ErrUnsupportedFeature = errors.New("please use enhanced methods")
+)
+
 type KaspiError struct {
 	StatusCode int
 	Message    string
