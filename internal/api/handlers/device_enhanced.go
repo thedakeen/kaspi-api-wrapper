@@ -23,7 +23,7 @@ func (h *Handlers) GetTradePointsEnhanced(w http.ResponseWriter, r *http.Request
 
 	tradePoints, err := h.deviceEnhancedProvider.GetTradePointsEnhanced(r.Context(), organizationBin)
 	if err != nil {
-		h.log.Error("failed to get trade points (enhanced)", err)
+		h.log.Error("failed to get trade points (enhanced)", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -58,7 +58,7 @@ func (h *Handlers) RegisterDeviceEnhanced(w http.ResponseWriter, r *http.Request
 
 	resp, err := h.deviceEnhancedProvider.RegisterDeviceEnhanced(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to register device (enhanced)", err)
+		h.log.Error("failed to register device (enhanced)", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -88,7 +88,7 @@ func (h *Handlers) DeleteDeviceEnhanced(w http.ResponseWriter, r *http.Request) 
 
 	err := h.deviceEnhancedProvider.DeleteDeviceEnhanced(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to delete device (enhanced)", err)
+		h.log.Error("failed to delete device (enhanced)", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}

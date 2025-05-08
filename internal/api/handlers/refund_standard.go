@@ -29,7 +29,7 @@ func (h *Handlers) CreateRefundQR(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.refundProvider.CreateRefundQR(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to create refund QR token", err)
+		h.log.Error("failed to create refund QR token", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -51,7 +51,7 @@ func (h *Handlers) GetRefundStatus(w http.ResponseWriter, r *http.Request) {
 
 	status, err := h.refundProvider.GetRefundStatus(r.Context(), qrReturnID)
 	if err != nil {
-		h.log.Error("failed to get refund status", err)
+		h.log.Error("failed to get refund status", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -81,7 +81,7 @@ func (h *Handlers) GetCustomerOperations(w http.ResponseWriter, r *http.Request)
 
 	operations, err := h.refundProvider.GetCustomerOperations(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to get customer operations", err)
+		h.log.Error("failed to get customer operations", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -115,7 +115,7 @@ func (h *Handlers) GetPaymentDetails(w http.ResponseWriter, r *http.Request) {
 
 	details, err := h.refundProvider.GetPaymentDetails(r.Context(), qrPaymentID, deviceToken)
 	if err != nil {
-		h.log.Error("failed to get payment details", err)
+		h.log.Error("failed to get payment details", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -155,7 +155,7 @@ func (h *Handlers) RefundPayment(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.refundProvider.RefundPayment(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to refund payment", err)
+		h.log.Error("failed to refund payment", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}

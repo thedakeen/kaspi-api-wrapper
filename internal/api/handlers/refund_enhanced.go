@@ -42,7 +42,7 @@ func (h *Handlers) RefundPaymentEnhanced(w http.ResponseWriter, r *http.Request)
 
 	resp, err := h.refundEnhancedProvider.RefundPaymentEnhanced(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to refund payment (enhanced)", err)
+		h.log.Error("failed to refund payment (enhanced)", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -70,7 +70,7 @@ func (h *Handlers) GetClientInfo(w http.ResponseWriter, r *http.Request) {
 
 	info, err := h.refundEnhancedProvider.GetClientInfo(r.Context(), phoneNumber, deviceToken)
 	if err != nil {
-		h.log.Error("failed to get client info", err)
+		h.log.Error("failed to get client info", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -110,7 +110,7 @@ func (h *Handlers) CreateRemotePayment(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.refundEnhancedProvider.CreateRemotePayment(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to create remote payment", err)
+		h.log.Error("failed to create remote payment", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -144,7 +144,7 @@ func (h *Handlers) CancelRemotePayment(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.refundEnhancedProvider.CancelRemotePayment(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to cancel remote payment", err)
+		h.log.Error("failed to cancel remote payment", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}

@@ -35,7 +35,7 @@ func (h *Handlers) CreateQREnhanced(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.paymentEnhancedProvider.CreateQREnhanced(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to create QR (enhanced)", err)
+		h.log.Error("failed to create QR (enhanced)", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -70,7 +70,7 @@ func (h *Handlers) CreatePaymentLinkEnhanced(w http.ResponseWriter, r *http.Requ
 
 	resp, err := h.paymentEnhancedProvider.CreatePaymentLinkEnhanced(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to create payment link (enhanced)", err)
+		h.log.Error("failed to create payment link (enhanced)", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}

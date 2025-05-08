@@ -16,7 +16,7 @@ type DeviceProvider interface {
 func (h *Handlers) GetTradePoints(w http.ResponseWriter, r *http.Request) {
 	tradePoints, err := h.deviceProvider.GetTradePoints(r.Context())
 	if err != nil {
-		h.log.Error("failed to get trade points", err)
+		h.log.Error("failed to get trade points", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -46,7 +46,7 @@ func (h *Handlers) RegisterDevice(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.deviceProvider.RegisterDevice(r.Context(), req)
 	if err != nil {
-		h.log.Error("failed to register device", err)
+		h.log.Error("failed to register device", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
@@ -74,7 +74,7 @@ func (h *Handlers) DeleteDevice(w http.ResponseWriter, r *http.Request) {
 
 	err := h.deviceProvider.DeleteDevice(r.Context(), req.DeviceToken)
 	if err != nil {
-		h.log.Error("failed to delete device", err)
+		h.log.Error("failed to delete device", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
 		return
 	}
