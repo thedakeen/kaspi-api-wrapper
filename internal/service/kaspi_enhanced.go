@@ -9,14 +9,144 @@ import (
 	"net/url"
 )
 
+//////// 	Device service	methods	(enhanced) 	////////
+
+// GetTradePointsEnhanced gets a list of trade points in the enhanced scheme (4.2.2)
+func (s *KaspiService) GetTradePointsEnhanced(ctx context.Context, organizationBin string) ([]domain.TradePoint, error) {
+	const op = "service.kaspi.GetTradePointsEnhanced"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("organizationBin", organizationBin),
+	)
+
+	log.Debug("getting trade points (enhanced)")
+
+	path := fmt.Sprintf("/partner/tradepoints/%s", organizationBin)
+
+	var result []domain.TradePoint
+	err := s.request(ctx, http.MethodGet, path, nil, &result)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Debug("trade points retrieved successfully (enhanced)")
+
+	return result, nil
+}
+
+// RegisterDeviceEnhanced registers a device in the enhanced scheme (4.2.3)
+func (s *KaspiService) RegisterDeviceEnhanced(ctx context.Context, req domain.EnhancedDeviceRegisterRequest) (*domain.DeviceRegisterResponse, error) {
+	const op = "service.kaspi.RegisterDeviceEnhanced"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("deviceID", req.DeviceID),
+		slog.Int64("tradePointID", req.TradePointID),
+		slog.String("organizationBin", req.OrganizationBin),
+	)
+
+	log.Debug("registering device (enhanced)")
+
+	path := "/device/register"
+
+	var result domain.DeviceRegisterResponse
+	err := s.request(ctx, http.MethodPost, path, req, &result)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Debug("device registered successfully (enhanced)")
+
+	return &result, nil
+}
+
+// DeleteDeviceEnhanced deletes a device in the enhanced scheme (4.2.4)
+func (s *KaspiService) DeleteDeviceEnhanced(ctx context.Context, req domain.EnhancedDeviceDeleteRequest) error {
+	const op = "service.kaspi.DeleteDeviceEnhanced"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("deviceToken", req.DeviceToken),
+		slog.String("organizationBin", req.OrganizationBin),
+	)
+
+	log.Debug("deleting device (enhanced)")
+
+	path := "/device/delete"
+
+	err := s.request(ctx, http.MethodPost, path, req, nil)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Debug("device deleted successfully (enhanced)")
+
+	return nil
+}
+
+//////// 	End of device service	methods	(enhanced) 	////////
+
+//////// 	Payment service	methods	(enhanced) 	////////
+
+// CreateQREnhanced creates a QR code for payment in the enhanced scheme (4.3.1)
+func (s *KaspiService) CreateQREnhanced(ctx context.Context, req domain.EnhancedQRCreateRequest) (*domain.QRCreateResponse, error) {
+	const op = "service.kaspi.CreateQREnhanced"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("deviceToken", req.DeviceToken),
+		slog.Float64("amount", req.Amount),
+		slog.String("organizationBin", req.OrganizationBin),
+	)
+
+	log.Debug("creating QR (enhanced)")
+
+	path := "/qr/create"
+
+	var result domain.QRCreateResponse
+	err := s.request(ctx, http.MethodPost, path, req, &result)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Debug("QR created successfully (enhanced)")
+
+	return &result, nil
+}
+
+// CreatePaymentLinkEnhanced creates a payment link in the enhanced scheme (4.3.2)
+func (s *KaspiService) CreatePaymentLinkEnhanced(ctx context.Context, req domain.EnhancedPaymentLinkCreateRequest) (*domain.PaymentLinkCreateResponse, error) {
+	const op = "service.kaspi.CreatePaymentLinkEnhanced"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("deviceToken", req.DeviceToken),
+		slog.Float64("amount", req.Amount),
+		slog.String("organizationBin", req.OrganizationBin),
+	)
+
+	log.Debug("creating payment link (enhanced)")
+
+	path := "/qr/create-link"
+
+	var result domain.PaymentLinkCreateResponse
+	err := s.request(ctx, http.MethodPost, path, req, &result)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Debug("payment link created successfully (enhanced)")
+
+	return &result, nil
+}
+
+//////// 	End of payment service	methods	(enhanced) 	////////
+
 //////// 	Refund service	methods	(enhanced) 	////////
 
 // RefundPaymentEnhanced initiates a payment refund without customer participation (4.5)
 func (s *KaspiService) RefundPaymentEnhanced(ctx context.Context, req domain.EnhancedRefundRequest) (*domain.RefundResponse, error) {
-	if s.scheme != "enhanced" {
-		return nil, fmt.Errorf("enhanced refund functionality is only available in enhanced scheme")
-	}
-
 	const op = "service.kaspi.RefundPaymentEnhanced"
 
 	log := s.log.With(
@@ -43,10 +173,6 @@ func (s *KaspiService) RefundPaymentEnhanced(ctx context.Context, req domain.Enh
 
 // GetClientInfo retrieves client information by phone number (4.6.1)
 func (s *KaspiService) GetClientInfo(ctx context.Context, phoneNumber, deviceToken string) (*domain.ClientInfoResponse, error) {
-	if s.scheme != "enhanced" {
-		return nil, fmt.Errorf("remote payment functionality is only available in enhanced scheme")
-	}
-
 	const op = "service.kaspi.GetClientInfo"
 
 	log := s.log.With(

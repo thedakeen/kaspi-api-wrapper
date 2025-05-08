@@ -41,6 +41,9 @@ func NewKaspiService(log *slog.Logger,
 			Timeout: 30 * time.Second,
 		}
 	case "standard", "enhanced":
+		httpClient = &http.Client{
+			Timeout: 30 * time.Second,
+		}
 		//cert, err := tls.LoadX509KeyPair(certFile, certFile)
 		//if err != nil {
 		//	log.Error("failed to load certificate", "error", err)

@@ -1,5 +1,30 @@
 package domain
 
+type EnhancedDeviceRegisterRequest struct {
+	DeviceID        string `json:"DeviceId"`
+	TradePointID    int64  `json:"TradePointId"`
+	OrganizationBin string `json:"OrganizationBin"`
+}
+
+type EnhancedDeviceDeleteRequest struct {
+	DeviceToken     string `json:"DeviceToken"`
+	OrganizationBin string `json:"OrganizationBin"`
+}
+
+type EnhancedQRCreateRequest struct {
+	DeviceToken     string  `json:"DeviceToken"`
+	Amount          float64 `json:"Amount"`
+	ExternalID      string  `json:"ExternalId,omitempty"`
+	OrganizationBin string  `json:"OrganizationBin"`
+}
+
+type EnhancedPaymentLinkCreateRequest struct {
+	DeviceToken     string  `json:"DeviceToken"`
+	Amount          float64 `json:"Amount"`
+	ExternalID      string  `json:"ExternalId,omitempty"`
+	OrganizationBin string  `json:"OrganizationBin"`
+}
+
 type EnhancedRefundRequest struct {
 	DeviceToken     string  `json:"DeviceToken"`
 	QrPaymentID     int64   `json:"QrPaymentId"`
