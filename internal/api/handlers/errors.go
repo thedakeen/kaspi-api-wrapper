@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"kaspi-api-wrapper/internal/domain"
 	"log/slog"
 	"net/http"
@@ -8,6 +9,11 @@ import (
 
 // HandleKaspiError handles Kaspi API errors and maps them to appropriate HTTP responses
 func HandleKaspiError(w http.ResponseWriter, err error, log *slog.Logger) {
+	if err != nil && errors.Is(err, domain.ErrUnsupportedFeature) {
+		log.Error("scheme compatibility error", "error", err)
+		ForbiddenError(w, err.Error())
+		return
+	}
 	kaspiErr, ok := domain.IsKaspiError(err)
 	if !ok {
 		log.Error("unexpected error", "error", err)

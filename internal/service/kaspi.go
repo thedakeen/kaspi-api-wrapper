@@ -185,6 +185,10 @@ func (s *KaspiService) request(ctx context.Context, method, path string, body, r
 func (s *KaspiService) GetTradePoints(ctx context.Context) ([]domain.TradePoint, error) {
 	const op = "service.kaspi.GetTradePoints"
 
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
+	}
+
 	log := s.log.With(
 		slog.String("op", op),
 	)
@@ -207,6 +211,10 @@ func (s *KaspiService) GetTradePoints(ctx context.Context) ([]domain.TradePoint,
 // RegisterDevice registers a new device in Kaspi Pay (2.2.3)
 func (s *KaspiService) RegisterDevice(ctx context.Context, req domain.DeviceRegisterRequest) (*domain.DeviceRegisterResponse, error) {
 	const op = "service.kaspi.RegisterDevice"
+
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
+	}
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -232,6 +240,10 @@ func (s *KaspiService) RegisterDevice(ctx context.Context, req domain.DeviceRegi
 // DeleteDevice deletes a device from Kaspi Pay (2.2.4)
 func (s *KaspiService) DeleteDevice(ctx context.Context, deviceToken string) error {
 	const op = "service.kaspi.DeleteDevice"
+
+	if s.scheme == "enhanced" {
+		return domain.ErrUnsupportedFeature
+	}
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -263,6 +275,10 @@ func (s *KaspiService) DeleteDevice(ctx context.Context, deviceToken string) err
 func (s *KaspiService) CreateQR(ctx context.Context, req domain.QRCreateRequest) (*domain.QRCreateResponse, error) {
 	const op = "service.kaspi.CreateQR"
 
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
+	}
+
 	log := s.log.With(
 		slog.String("op", op),
 		slog.String("deviceToken", req.DeviceToken),
@@ -287,6 +303,10 @@ func (s *KaspiService) CreateQR(ctx context.Context, req domain.QRCreateRequest)
 // CreatePaymentLink creates a payment link (2.3.2)
 func (s *KaspiService) CreatePaymentLink(ctx context.Context, req domain.PaymentLinkCreateRequest) (*domain.PaymentLinkCreateResponse, error) {
 	const op = "service.kaspi.CreatePaymentLink"
+
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
+	}
 
 	log := s.log.With(
 		slog.String("op", op),

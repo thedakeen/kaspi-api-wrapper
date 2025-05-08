@@ -132,6 +132,10 @@ func (s *KaspiService) RefundPayment(ctx context.Context, req domain.RefundReque
 
 	const op = "service.kaspi.RefundPayment"
 
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
+	}
+
 	log := s.log.With(
 		slog.String("op", op),
 		slog.String("deviceToken", req.DeviceToken),
