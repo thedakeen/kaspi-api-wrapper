@@ -6,6 +6,8 @@ import (
 )
 
 type Config struct {
+	Env string `env:"ENV" env-default:"dev"`
+
 	HTTPPort int `env:"HTTP_PORT"`
 	KaspiAPI KaspiAPI
 }
