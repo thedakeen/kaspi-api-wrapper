@@ -72,7 +72,7 @@ func (r *Router) Setup() *chi.Mux {
 		enhancedScheme := custommw.SchemeMiddleware(r.scheme, "enhanced")
 
 		// 4.2.2 - Get trade points (enhanced)
-		apiRouter.With(enhancedScheme).Get("/tradepoints/enhanced", r.handlers.GetTradePointsEnhanced)
+		apiRouter.With(enhancedScheme).Get("/tradepoints/enhanced/{organizationBin}", r.handlers.GetTradePointsEnhanced)
 
 		// 4.2.3 - Register device (enhanced)
 		apiRouter.With(enhancedScheme).Post("/device/register/enhanced", r.handlers.RegisterDeviceEnhanced)
