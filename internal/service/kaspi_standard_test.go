@@ -3,7 +3,6 @@ package service_test
 import (
 	"context"
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/service"
 	"kaspi-api-wrapper/internal/testutils"
 	"net/http"
 	"testing"
@@ -13,13 +12,7 @@ import (
 func TestCreateRefundQR(t *testing.T) {
 	t.Run("successfully creates refund QR token", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "standard", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "standard")
 
 		expireDate, _ := time.Parse(time.RFC3339, "2023-05-16T10:30:00+06:00")
 
@@ -76,10 +69,7 @@ func TestCreateRefundQR(t *testing.T) {
 
 	t.Run("fails on basic scheme", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
+		svc, _ := setupTestService(log, "basic")
 
 		_, err := svc.CreateRefundQR(context.Background(), domain.QRRefundCreateRequest{
 			DeviceToken: "test-token",
@@ -99,13 +89,7 @@ func TestCreateRefundQR(t *testing.T) {
 func TestGetRefundStatus(t *testing.T) {
 	t.Run("successfully gets refund status", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "standard", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "standard")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/return/status/15" {
@@ -140,13 +124,7 @@ func TestGetRefundStatus(t *testing.T) {
 func TestGetCustomerOperations(t *testing.T) {
 	t.Run("successfully gets customer operations", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "standard", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "standard")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/return/operations" {
@@ -206,13 +184,7 @@ func TestGetCustomerOperations(t *testing.T) {
 func TestGetPaymentDetails(t *testing.T) {
 	t.Run("successfully gets payment details", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "standard", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "standard")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			expectedPath := "/payment/details"
@@ -267,13 +239,7 @@ func TestGetPaymentDetails(t *testing.T) {
 func TestRefundPayment(t *testing.T) {
 	t.Run("successfully refunds payment", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "standard", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "standard")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/payment/return" {
