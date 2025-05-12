@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/storage"
 	"log/slog"
 	"net/http"
 	"time"
@@ -24,6 +26,13 @@ type KaspiService struct {
 	baseURLEnh   string
 	httpClient   HTTPClient
 	apiKey       string
+
+	deviceSaver DeviceSaver
+}
+
+type DeviceSaver interface {
+	SaveDevice(ctx context.Context, deviceID string, deviceToken string, tradePointID int64) error
+	SaveDeviceEnhanced(ctx context.Context, deviceID string, deviceToken string, tradePointID int64, organizationBin string) error
 }
 
 func NewKaspiService(log *slog.Logger,
@@ -32,6 +41,8 @@ func NewKaspiService(log *slog.Logger,
 	baseURLStd string,
 	baseURLEnh string,
 	apiKey string,
+
+	deviceSaver DeviceSaver,
 ) *KaspiService {
 	var httpClient *http.Client
 
@@ -70,6 +81,8 @@ func NewKaspiService(log *slog.Logger,
 		baseURLEnh:   baseURLEnh,
 		httpClient:   httpClient,
 		apiKey:       apiKey,
+
+		deviceSaver: deviceSaver,
 	}
 }
 
@@ -233,6 +246,25 @@ func (s *KaspiService) RegisterDevice(ctx context.Context, req domain.DeviceRegi
 	}
 
 	log.Debug("new device registered successfully")
+
+	// DB interaction
+	log.Debug("saving device to database")
+
+	err = s.deviceSaver.SaveDevice(ctx, req.DeviceID, result.DeviceToken, req.TradePointID)
+	if err != nil {
+		log.Error("failed to save device to database")
+		switch {
+		case errors.Is(err, storage.ErrDeviceExists):
+			return nil, &domain.KaspiError{
+				StatusCode: -1503,
+				Message:    "Device is already added to another trade point",
+			}
+		default:
+			return nil, fmt.Errorf("%s:%w", op, err)
+		}
+	}
+
+	log.Debug("device saved to database successfully")
 
 	return &result, nil
 }

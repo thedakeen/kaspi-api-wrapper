@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"kaspi-api-wrapper/internal/api/handlers"
 	"kaspi-api-wrapper/internal/app"
 	"kaspi-api-wrapper/internal/config"
 	"kaspi-api-wrapper/internal/service"
+	"kaspi-api-wrapper/internal/storage/postgres"
 	"kaspi-api-wrapper/pkg/lib/logger/handlers/slogpretty"
 	"log/slog"
 	"os"
@@ -36,6 +38,19 @@ func main() {
 
 	log.Debug("debug enabled")
 
+	dsn := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Database.Host, cfg.Database.Port, cfg.Database.User,
+		cfg.Database.Password, cfg.Database.Name, cfg.Database.SSLMode,
+	)
+
+	log.Info("connecting to database", "host", cfg.Database.Host, "dbname", cfg.Database.Name)
+	storage, err := postgres.New(dsn)
+	if err != nil {
+		panic(err)
+	}
+	defer storage.Stop()
+
 	kaspiService := service.NewKaspiService(
 		log,
 		cfg.KaspiAPI.Scheme,
@@ -43,6 +58,8 @@ func main() {
 		cfg.KaspiAPI.BaseURLStd,
 		cfg.KaspiAPI.BaseURLEnh,
 		cfg.KaspiAPI.ApiKey,
+
+		storage,
 	)
 
 	h := handlers.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)

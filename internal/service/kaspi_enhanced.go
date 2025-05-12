@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/storage"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -23,6 +25,10 @@ import (
 */
 
 //////// 	Device service	methods	(enhanced) 	////////
+
+type DeviceSaverEnhanced interface {
+	SaveDeviceEnhanced(ctx context.Context, deviceID string, deviceToken string, tradePointID int64, organizationBin string) error
+}
 
 // GetTradePointsEnhanced gets a list of trade points in the enhanced scheme (4.2.2)
 func (s *KaspiService) GetTradePointsEnhanced(ctx context.Context, organizationBin string) ([]domain.TradePoint, error) {
@@ -70,6 +76,25 @@ func (s *KaspiService) RegisterDeviceEnhanced(ctx context.Context, req domain.En
 	}
 
 	log.Debug("device registered successfully (enhanced)")
+
+	// DB interaction
+	log.Debug("saving device to database (enhanced)")
+
+	err = s.deviceSaver.SaveDeviceEnhanced(ctx, req.DeviceID, result.DeviceToken, req.TradePointID, req.OrganizationBin)
+	if err != nil {
+		log.Error("failed to save device to database")
+		switch {
+		case errors.Is(err, storage.ErrDeviceExists):
+			return nil, &domain.KaspiError{
+				StatusCode: -1503,
+				Message:    "Device is already added to another trade point",
+			}
+		default:
+			return nil, fmt.Errorf("%s:%w", op, err)
+		}
+	}
+
+	log.Debug("device saved to database successfully (enhanced)")
 
 	return &result, nil
 }
