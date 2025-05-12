@@ -11,3 +11,47 @@ services:
     volumes:
       - ./.env:/app/.env
     restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=kaspi-wrapper-db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-kaspi_pay}
+      - DB_SSL_MODE=${DB_SSL_MODE:-disable}
+
+
+  db:
+    image: postgres:16-alpine
+    container_name: kaspi-wrapper-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./dumps:/dumps
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-kaspi_pay}
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+
+  db-tools:
+    image: postgres:16-alpine
+    container_name: kaspi-wrapper-db-tools
+    volumes:
+      - ./dumps:/dumps
+      - ./scripts/db_dump.sh:/db_dump.sh
+      - ./scripts/db_restore.sh:/db_restore.sh
+    environment:
+      - DB_HOST=kaspi-wrapper-db
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-kaspi_pay}
+    entrypoint: ["sh"]
+    depends_on:
+      - db
+    profiles:
+      - tools
+volumes:
+  postgres_data:
