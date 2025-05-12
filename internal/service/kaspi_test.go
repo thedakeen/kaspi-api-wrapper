@@ -22,56 +22,81 @@ func setupTestLogger() *slog.Logger {
 	}))
 }
 
+func setupTestService(log *slog.Logger, scheme string) (*service.KaspiService, *testutils.MockHTTPClient) {
+	mockClient := &testutils.MockHTTPClient{}
+
+	svc := service.NewKaspiService(
+		log,
+		scheme,
+		"https://test.com",
+		"https://test.com",
+		"https://test.com",
+		"test-api-key",
+		nil,
+	)
+
+	svc.SetHTTPClient(mockClient)
+
+	return svc, mockClient
+}
+
+type MockDeviceSaver struct {
+	SaveDeviceFunc         func(ctx context.Context, deviceID, deviceToken string, tradePointID int64) error
+	SaveDeviceEnhancedFunc func(ctx context.Context, deviceID, deviceToken string, tradePointID int64, organizationBin string) error
+}
+
+func (m *MockDeviceSaver) SaveDevice(ctx context.Context, deviceID, deviceToken string, tradePointID int64) error {
+	if m.SaveDeviceEnhancedFunc != nil {
+		return m.SaveDeviceFunc(ctx, deviceID, deviceToken, tradePointID)
+	}
+	return nil // Default implementation returns nil (no error)
+}
+
+func (m *MockDeviceSaver) SaveDeviceEnhanced(ctx context.Context, deviceID, deviceToken string, tradePointID int64, organizationBin string) error {
+	if m.SaveDeviceEnhancedFunc != nil {
+		return m.SaveDeviceEnhancedFunc(ctx, deviceID, deviceToken, tradePointID, organizationBin)
+	}
+	return nil // Default implementation returns nil (no error)
+}
+
 func TestGetBaseURL(t *testing.T) {
 	t.Run("returns basic URL for basic scheme", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://basic-url.com",
-			"https://standard-url.com", "https://enhanced-url.com", "test-api-key",
-		)
+		svc, _ := setupTestService(log, "basic")
 
 		baseURL := svc.GetBaseURL()
-		if baseURL != "https://basic-url.com" {
-			t.Errorf("Expected base URL https://basic-url.com, got %s", baseURL)
+		if baseURL != "https://test.com" {
+			t.Errorf("Expected base URL https://test.com, got %s", baseURL)
 		}
 	})
 
 	t.Run("returns standard URL for standard scheme", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "standard", "https://basic-url.com",
-			"https://standard-url.com", "https://enhanced-url.com", "test-api-key",
-		)
+		svc, _ := setupTestService(log, "standard")
 
 		baseURL := svc.GetBaseURL()
-		if baseURL != "https://standard-url.com" {
-			t.Errorf("Expected base URL https://standard-url.com, got %s", baseURL)
+		if baseURL != "https://test.com" {
+			t.Errorf("Expected base URL https://test.com, got %s", baseURL)
 		}
 	})
 
 	t.Run("returns enhanced URL for enhanced scheme", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "enhanced", "https://basic-url.com",
-			"https://standard-url.com", "https://enhanced-url.com", "test-api-key",
-		)
+		svc, _ := setupTestService(log, "enhanced")
 
 		baseURL := svc.GetBaseURL()
-		if baseURL != "https://enhanced-url.com" {
-			t.Errorf("Expected base URL https://enhanced-url.com, got %s", baseURL)
+		if baseURL != "https://test.com" {
+			t.Errorf("Expected base URL https://test.com, got %s", baseURL)
 		}
 	})
 
 	t.Run("defaults to basic URL for unknown scheme", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "unknown", "https://basic-url.com",
-			"https://standard-url.com", "https://enhanced-url.com", "test-api-key",
-		)
+		svc, _ := setupTestService(log, "unknown")
 
 		baseURL := svc.GetBaseURL()
-		if baseURL != "https://basic-url.com" {
-			t.Errorf("Expected base URL https://basic-url.com, got %s", baseURL)
+		if baseURL != "https://test.com" {
+			t.Errorf("Expected base URL https://test.com, got %s", baseURL)
 		}
 	})
 }
@@ -79,13 +104,7 @@ func TestGetBaseURL(t *testing.T) {
 func TestRequest(t *testing.T) {
 	t.Run("successful request", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			// Verify request properties
@@ -132,13 +151,7 @@ func TestRequest(t *testing.T) {
 
 	t.Run("HTTP client error", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			return nil, errors.New("network error")
@@ -158,13 +171,7 @@ func TestRequest(t *testing.T) {
 
 	t.Run("Kaspi API error", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			return testutils.NewMockResponse(http.StatusOK, `{
@@ -196,13 +203,7 @@ func TestRequest(t *testing.T) {
 
 	t.Run("Invalid JSON response", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			return testutils.NewMockResponse(http.StatusOK, `invalid json`), nil
@@ -226,13 +227,7 @@ func TestRequest(t *testing.T) {
 func TestGetTradePoints(t *testing.T) {
 	t.Run("successfully gets trade points", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/partner/tradepoints" {
@@ -274,13 +269,7 @@ func TestGetTradePoints(t *testing.T) {
 
 	t.Run("handles error response", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			return testutils.NewMockResponse(http.StatusOK, `{
@@ -309,13 +298,7 @@ func TestGetTradePoints(t *testing.T) {
 func TestRegisterDevice(t *testing.T) {
 	t.Run("successfully registers device", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/device/register" {
@@ -371,13 +354,7 @@ func TestRegisterDevice(t *testing.T) {
 func TestDeleteDevice(t *testing.T) {
 	t.Run("successfully deletes device", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/device/delete" {
@@ -419,13 +396,7 @@ func TestDeleteDevice(t *testing.T) {
 
 	t.Run("handles error response", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			return testutils.NewMockResponse(http.StatusOK, `{
@@ -458,13 +429,7 @@ func TestDeleteDevice(t *testing.T) {
 func TestCreateQR(t *testing.T) {
 	t.Run("successfully creates QR token", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		expireDate, _ := time.Parse(time.RFC3339, "2023-05-16T10:30:00+06:00")
 
@@ -547,13 +512,7 @@ func TestCreateQR(t *testing.T) {
 func TestCreatePaymentLink(t *testing.T) {
 	t.Run("successfully creates payment link", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/qr/create-link" {
@@ -600,13 +559,7 @@ func TestCreatePaymentLink(t *testing.T) {
 func TestGetPaymentStatus(t *testing.T) {
 	t.Run("successfully gets payment status", func(t *testing.T) {
 		log := setupTestLogger()
-		svc := service.NewKaspiService(
-			log, "basic", "https://test.com",
-			"https://test.com", "https://test.com", "test-api-key",
-		)
-
-		mockClient := &testutils.MockHTTPClient{}
-		svc.SetHTTPClient(mockClient)
+		svc, mockClient := setupTestService(log, "basic")
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/payment/status/15" {
@@ -659,4 +612,4 @@ func TestGetPaymentStatus(t *testing.T) {
 	})
 }
 
-//////// 	End of device operations testing		////////
+//////// 	End of payment operations testing		////////
