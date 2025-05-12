@@ -58,6 +58,8 @@ func main() {
 		cfg.KaspiAPI.BaseURLStd,
 		cfg.KaspiAPI.BaseURLEnh,
 		cfg.KaspiAPI.ApiKey,
+
+		storage,
 	)
 
 	h := handlers.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
