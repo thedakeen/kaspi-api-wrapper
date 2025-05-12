@@ -3,8 +3,10 @@ package service_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/service"
 	"kaspi-api-wrapper/internal/testutils"
 	"net/http"
 	"strings"
@@ -84,9 +86,44 @@ func TestGetTradePointsEnhanced(t *testing.T) {
 }
 
 func TestRegisterDeviceEnhanced(t *testing.T) {
-	t.Run("successfully registers device", func(t *testing.T) {
+	t.Run("successfully registers device with enhanced scheme", func(t *testing.T) {
 		log := setupTestLogger()
-		svc, mockClient := setupTestService(log, "basic")
+
+		var savedDeviceID string
+		var savedDeviceToken string
+		var savedTradePointID int64
+		var savedOrganizationBin string
+		saveDeviceEnhancedCalled := false
+
+		mockSaver := &MockDeviceSaver{
+			SaveDeviceEnhancedFunc: func(ctx context.Context, deviceID, deviceToken string, tradePointID int64, organizationBin string) error {
+				saveDeviceEnhancedCalled = true
+				savedDeviceID = deviceID
+				savedDeviceToken = deviceToken
+				savedTradePointID = tradePointID
+				savedOrganizationBin = organizationBin
+				return nil
+			},
+		}
+
+		mockClient := &testutils.MockHTTPClient{}
+
+		svc := service.NewKaspiService(
+			log,
+			"enhanced",
+			"https://test.com",
+			"https://test.com",
+			"https://test.com",
+			"test-api-key",
+			mockSaver,
+		)
+
+		svc.SetHTTPClient(mockClient)
+
+		expectedDeviceToken := "2be4cc91-5895-48f8-8bc2-86c7bd419b3b"
+		expectedDeviceID := "TEST-DEVICE"
+		expectedTradePointID := int64(1)
+		expectedOrganizationBin := "180340021791"
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/device/register" {
@@ -97,7 +134,6 @@ func TestRegisterDeviceEnhanced(t *testing.T) {
 				t.Errorf("Expected method POST, got %s", req.Method)
 			}
 
-			// Verify request body
 			body, _ := io.ReadAll(req.Body)
 			req.Body.Close()
 
@@ -107,39 +143,63 @@ func TestRegisterDeviceEnhanced(t *testing.T) {
 				t.Errorf("Failed to parse request body: %v", err)
 			}
 
-			if reqBody.DeviceID != "TEST-DEVICE" {
-				t.Errorf("Expected DeviceID TEST-DEVICE, got %s", reqBody.DeviceID)
+			if reqBody.DeviceID != expectedDeviceID {
+				t.Errorf("Expected DeviceID %s, got %s", expectedDeviceID, reqBody.DeviceID)
 			}
 
-			if reqBody.TradePointID != 1 {
-				t.Errorf("Expected TradePointID 1, got %d", reqBody.TradePointID)
+			if reqBody.TradePointID != expectedTradePointID {
+				t.Errorf("Expected TradePointID %d, got %d", expectedTradePointID, reqBody.TradePointID)
 			}
 
-			if reqBody.OrganizationBin != "180340021791" {
-				t.Errorf("Expected OrganizationBin 180340021791, got %s", reqBody.OrganizationBin)
+			if reqBody.OrganizationBin != expectedOrganizationBin {
+				t.Errorf("Expected OrganizationBin %s, got %s", expectedOrganizationBin, reqBody.OrganizationBin)
 			}
 
-			return testutils.NewMockResponse(http.StatusOK, `{
+			return testutils.NewMockResponse(http.StatusOK, fmt.Sprintf(`{
 				"StatusCode": 0,
 				"Message": "OK",
 				"Data": {
-					"DeviceToken": "2be4cc91-5895-48f8-8bc2-86c7bd419b3b"
+					"DeviceToken": "%s"
 				}
-			}`), nil
+			}`, expectedDeviceToken)), nil
 		}
 
 		resp, err := svc.RegisterDeviceEnhanced(context.Background(), domain.EnhancedDeviceRegisterRequest{
-			DeviceID:        "TEST-DEVICE",
-			TradePointID:    1,
-			OrganizationBin: "180340021791",
+			DeviceID:        expectedDeviceID,
+			TradePointID:    expectedTradePointID,
+			OrganizationBin: expectedOrganizationBin,
 		})
 
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
 
-		if resp.DeviceToken != "2be4cc91-5895-48f8-8bc2-86c7bd419b3b" {
-			t.Errorf("Expected device token 2be4cc91-5895-48f8-8bc2-86c7bd419b3b, got %s", resp.DeviceToken)
+		if resp.DeviceToken != expectedDeviceToken {
+			t.Errorf("Expected device token %s, got %s", expectedDeviceToken, resp.DeviceToken)
+		}
+
+		if !saveDeviceEnhancedCalled {
+			t.Error("SaveDeviceEnhanced method was not called")
+		}
+
+		if savedDeviceID != expectedDeviceID {
+			t.Errorf("SaveDeviceEnhanced called with wrong deviceID, expected: %s, got: %s",
+				expectedDeviceID, savedDeviceID)
+		}
+
+		if savedDeviceToken != expectedDeviceToken {
+			t.Errorf("SaveDeviceEnhanced called with wrong deviceToken, expected: %s, got: %s",
+				expectedDeviceToken, savedDeviceToken)
+		}
+
+		if savedTradePointID != expectedTradePointID {
+			t.Errorf("SaveDeviceEnhanced called with wrong tradePointID, expected: %d, got: %d",
+				expectedTradePointID, savedTradePointID)
+		}
+
+		if savedOrganizationBin != expectedOrganizationBin {
+			t.Errorf("SaveDeviceEnhanced called with wrong organizationBin, expected: %s, got: %s",
+				expectedOrganizationBin, savedOrganizationBin)
 		}
 	})
 }
@@ -158,7 +218,6 @@ func TestDeleteDeviceEnhanced(t *testing.T) {
 				t.Errorf("Expected method POST, got %s", req.Method)
 			}
 
-			// Verify request body
 			body, _ := io.ReadAll(req.Body)
 			req.Body.Close()
 

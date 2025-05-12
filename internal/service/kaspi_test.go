@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"kaspi-api-wrapper/internal/domain"
 	"kaspi-api-wrapper/internal/service"
+	"kaspi-api-wrapper/internal/storage"
 	"kaspi-api-wrapper/internal/testutils"
 	"log/slog"
 	"net/http"
@@ -25,6 +27,15 @@ func setupTestLogger() *slog.Logger {
 func setupTestService(log *slog.Logger, scheme string) (*service.KaspiService, *testutils.MockHTTPClient) {
 	mockClient := &testutils.MockHTTPClient{}
 
+	mockSaver := &MockDeviceSaver{
+		SaveDeviceFunc: func(ctx context.Context, deviceID, deviceToken string, tradePointID int64) error {
+			return nil
+		},
+		SaveDeviceEnhancedFunc: func(ctx context.Context, deviceID, deviceToken string, tradePointID int64, organizationBin string) error {
+			return nil
+		},
+	}
+
 	svc := service.NewKaspiService(
 		log,
 		scheme,
@@ -32,7 +43,7 @@ func setupTestService(log *slog.Logger, scheme string) (*service.KaspiService, *
 		"https://test.com",
 		"https://test.com",
 		"test-api-key",
-		nil,
+		mockSaver,
 	)
 
 	svc.SetHTTPClient(mockClient)
@@ -46,17 +57,17 @@ type MockDeviceSaver struct {
 }
 
 func (m *MockDeviceSaver) SaveDevice(ctx context.Context, deviceID, deviceToken string, tradePointID int64) error {
-	if m.SaveDeviceEnhancedFunc != nil {
+	if m.SaveDeviceFunc != nil {
 		return m.SaveDeviceFunc(ctx, deviceID, deviceToken, tradePointID)
 	}
-	return nil // Default implementation returns nil (no error)
+	return nil
 }
 
 func (m *MockDeviceSaver) SaveDeviceEnhanced(ctx context.Context, deviceID, deviceToken string, tradePointID int64, organizationBin string) error {
 	if m.SaveDeviceEnhancedFunc != nil {
 		return m.SaveDeviceEnhancedFunc(ctx, deviceID, deviceToken, tradePointID, organizationBin)
 	}
-	return nil // Default implementation returns nil (no error)
+	return nil
 }
 
 func TestGetBaseURL(t *testing.T) {
@@ -298,7 +309,39 @@ func TestGetTradePoints(t *testing.T) {
 func TestRegisterDevice(t *testing.T) {
 	t.Run("successfully registers device", func(t *testing.T) {
 		log := setupTestLogger()
-		svc, mockClient := setupTestService(log, "basic")
+
+		var savedDeviceID string
+		var savedDeviceToken string
+		var savedTradePointID int64
+		saveDeviceCalled := false
+
+		mockSaver := &MockDeviceSaver{
+			SaveDeviceFunc: func(ctx context.Context, deviceID, deviceToken string, tradePointID int64) error {
+				saveDeviceCalled = true
+				savedDeviceID = deviceID
+				savedDeviceToken = deviceToken
+				savedTradePointID = tradePointID
+				return nil
+			},
+		}
+
+		mockClient := &testutils.MockHTTPClient{}
+
+		svc := service.NewKaspiService(
+			log,
+			"basic",
+			"https://test.com",
+			"https://test.com",
+			"https://test.com",
+			"test-api-key",
+			mockSaver,
+		)
+
+		svc.SetHTTPClient(mockClient)
+
+		expectedDeviceToken := "2be4cc91-5895-48f8-8bc2-86c7bd419b3b"
+		expectedDeviceID := "TEST-DEVICE"
+		expectedTradePointID := int64(1)
 
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path != "/device/register" {
@@ -309,7 +352,6 @@ func TestRegisterDevice(t *testing.T) {
 				t.Errorf("Expected method POST, got %s", req.Method)
 			}
 
-			// Verify request body
 			body, _ := io.ReadAll(req.Body)
 			req.Body.Close()
 
@@ -319,14 +361,80 @@ func TestRegisterDevice(t *testing.T) {
 				t.Errorf("Failed to parse request body: %v", err)
 			}
 
-			if reqBody.DeviceID != "TEST-DEVICE" {
-				t.Errorf("Expected DeviceID TEST-DEVICE, got %s", reqBody.DeviceID)
+			if reqBody.DeviceID != expectedDeviceID {
+				t.Errorf("Expected DeviceID %s, got %s", expectedDeviceID, reqBody.DeviceID)
 			}
 
-			if reqBody.TradePointID != 1 {
-				t.Errorf("Expected TradePointID 1, got %d", reqBody.TradePointID)
+			if reqBody.TradePointID != expectedTradePointID {
+				t.Errorf("Expected TradePointID %d, got %d", expectedTradePointID, reqBody.TradePointID)
 			}
 
+			return testutils.NewMockResponse(http.StatusOK, fmt.Sprintf(`{
+				"StatusCode": 0,
+				"Message": "OK",
+				"Data": {
+					"DeviceToken": "%s"
+				}
+			}`, expectedDeviceToken)), nil
+		}
+
+		resp, err := svc.RegisterDevice(context.Background(), domain.DeviceRegisterRequest{
+			DeviceID:     expectedDeviceID,
+			TradePointID: expectedTradePointID,
+		})
+
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+
+		if resp.DeviceToken != expectedDeviceToken {
+			t.Errorf("Expected device token %s, got %s", expectedDeviceToken, resp.DeviceToken)
+		}
+
+		if !saveDeviceCalled {
+			t.Error("SaveDevice method was not called")
+		}
+
+		if savedDeviceID != expectedDeviceID {
+			t.Errorf("SaveDevice called with wrong deviceID, expected: %s, got: %s",
+				expectedDeviceID, savedDeviceID)
+		}
+
+		if savedDeviceToken != expectedDeviceToken {
+			t.Errorf("SaveDevice called with wrong deviceToken, expected: %s, got: %s",
+				expectedDeviceToken, savedDeviceToken)
+		}
+
+		if savedTradePointID != expectedTradePointID {
+			t.Errorf("SaveDevice called with wrong tradePointID, expected: %d, got: %d",
+				expectedTradePointID, savedTradePointID)
+		}
+	})
+
+	t.Run("handles device already exists error", func(t *testing.T) {
+		log := setupTestLogger()
+
+		mockSaver := &MockDeviceSaver{
+			SaveDeviceFunc: func(ctx context.Context, deviceID, deviceToken string, tradePointID int64) error {
+				return storage.ErrDeviceExists
+			},
+		}
+
+		mockClient := &testutils.MockHTTPClient{}
+
+		svc := service.NewKaspiService(
+			log,
+			"basic",
+			"https://test.com",
+			"https://test.com",
+			"https://test.com",
+			"test-api-key",
+			mockSaver,
+		)
+
+		svc.SetHTTPClient(mockClient)
+
+		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 			return testutils.NewMockResponse(http.StatusOK, `{
 				"StatusCode": 0,
 				"Message": "OK",
@@ -336,17 +444,22 @@ func TestRegisterDevice(t *testing.T) {
 			}`), nil
 		}
 
-		resp, err := svc.RegisterDevice(context.Background(), domain.DeviceRegisterRequest{
+		_, err := svc.RegisterDevice(context.Background(), domain.DeviceRegisterRequest{
 			DeviceID:     "TEST-DEVICE",
-			TradePointID: 1,
+			TradePointID: 2,
 		})
 
-		if err != nil {
-			t.Fatalf("Expected no error, got %v", err)
+		if err == nil {
+			t.Fatal("Expected error, got nil")
 		}
 
-		if resp.DeviceToken != "2be4cc91-5895-48f8-8bc2-86c7bd419b3b" {
-			t.Errorf("Expected device token 2be4cc91-5895-48f8-8bc2-86c7bd419b3b, got %s", resp.DeviceToken)
+		kaspiErr, ok := domain.IsKaspiError(err)
+		if !ok {
+			t.Fatalf("Expected KaspiError, got %T: %v", err, err)
+		}
+
+		if kaspiErr.StatusCode != -1503 {
+			t.Errorf("Expected error code -1503, got %d", kaspiErr.StatusCode)
 		}
 	})
 }
