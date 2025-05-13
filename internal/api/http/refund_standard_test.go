@@ -143,7 +143,7 @@ func TestCreateRefundQRHandler(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "DeviceToken is required"
+		expectedError := "deviceToken: device token is required"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}
@@ -494,7 +494,7 @@ func TestRefundPaymentHandler(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "DeviceToken is required"
+		expectedError := "deviceToken: device token is required"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}
@@ -535,7 +535,7 @@ func TestRefundPaymentHandler(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "Amount must be greater than zero"
+		expectedError := "amount: amount must be greater than zero"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}

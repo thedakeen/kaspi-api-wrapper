@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"google.golang.org/grpc/codes"
@@ -40,11 +41,21 @@ func GRPCError(err error) error {
 func HTTPError(w http.ResponseWriter, err error) bool {
 	var valErr *ValidationError
 	if errors.As(err, &valErr) {
-		http.Error(w, valErr.Error(), http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   valErr.Error(),
+		})
 		return true
 	}
 
-	http.Error(w, "validation error", http.StatusInternalServerError)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusInternalServerError)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": false,
+		"error":   "validation error",
+	})
 	return true
 }
 
