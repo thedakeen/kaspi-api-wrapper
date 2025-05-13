@@ -145,7 +145,7 @@ func TestRefundPaymentEnhancedHandler(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "OrganizationBin is required"
+		expectedError := "organizationBin: organization BIN is required"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}
@@ -344,7 +344,7 @@ func TestCreateRemotePaymentHandler(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "PhoneNumber is required"
+		expectedError := "phoneNumber: phone number is required"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}

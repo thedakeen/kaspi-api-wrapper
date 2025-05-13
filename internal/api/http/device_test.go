@@ -215,7 +215,7 @@ func TestRegisterDevice(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "TradePointID is required"
+		expectedError := "tradePointId: trade point ID must be a positive number"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}
@@ -298,7 +298,7 @@ func TestDeleteDevice(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "device token is required"
+		expectedError := "deviceToken: device token is required"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}

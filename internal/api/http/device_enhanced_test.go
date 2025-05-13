@@ -202,7 +202,7 @@ func TestRegisterDeviceEnhancedHandler(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "OrganizationBin is required"
+		expectedError := "organizationBin: organization BIN is required"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}
@@ -290,7 +290,7 @@ func TestDeleteDeviceEnhancedHandler(t *testing.T) {
 			t.Errorf("Expected success to be false, got true")
 		}
 
-		expectedError := "DeviceToken is required"
+		expectedError := "deviceToken: device token is required"
 		if resp.Error != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}
