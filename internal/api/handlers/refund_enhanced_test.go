@@ -14,7 +14,7 @@ import (
 
 type MockRefundEnhancedProvider struct {
 	RefundPaymentEnhancedFunc func(ctx context.Context, req domain.EnhancedRefundRequest) (*domain.RefundResponse, error)
-	GetClientInfoFunc         func(ctx context.Context, phoneNumber, deviceToken string) (*domain.ClientInfoResponse, error)
+	GetClientInfoFunc         func(ctx context.Context, phoneNumber string, deviceToken int64) (*domain.ClientInfoResponse, error)
 	CreateRemotePaymentFunc   func(ctx context.Context, req domain.RemotePaymentRequest) (*domain.RemotePaymentResponse, error)
 	CancelRemotePaymentFunc   func(ctx context.Context, req domain.RemotePaymentCancelRequest) (*domain.RemotePaymentCancelResponse, error)
 }
@@ -23,7 +23,7 @@ func (m *MockRefundEnhancedProvider) RefundPaymentEnhanced(ctx context.Context, 
 	return m.RefundPaymentEnhancedFunc(ctx, req)
 }
 
-func (m *MockRefundEnhancedProvider) GetClientInfo(ctx context.Context, phoneNumber, deviceToken string) (*domain.ClientInfoResponse, error) {
+func (m *MockRefundEnhancedProvider) GetClientInfo(ctx context.Context, phoneNumber string, deviceToken int64) (*domain.ClientInfoResponse, error) {
 	return m.GetClientInfoFunc(ctx, phoneNumber, deviceToken)
 }
 
@@ -157,12 +157,12 @@ func TestGetClientInfoHandler(t *testing.T) {
 
 	t.Run("successfully gets client info", func(t *testing.T) {
 		mockProvider := &MockRefundEnhancedProvider{
-			GetClientInfoFunc: func(ctx context.Context, phoneNumber, deviceToken string) (*domain.ClientInfoResponse, error) {
+			GetClientInfoFunc: func(ctx context.Context, phoneNumber string, deviceToken int64) (*domain.ClientInfoResponse, error) {
 				if phoneNumber != "87071234567" {
 					return nil, fmt.Errorf("invalid phone number")
 				}
 
-				if deviceToken != "test-token" {
+				if deviceToken != 2 {
 					return nil, fmt.Errorf("invalid device token")
 				}
 
@@ -174,7 +174,7 @@ func TestGetClientInfoHandler(t *testing.T) {
 
 		h := handlers.NewHandlers(log, nil, nil, nil, nil, nil, nil, mockProvider)
 
-		req, err := http.NewRequest("GET", "/api/remote/client-info?phoneNumber=87071234567&deviceToken=test-token", nil)
+		req, err := http.NewRequest("GET", "/api/remote/client-info?phoneNumber=87071234567&deviceToken=2", nil)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -239,7 +239,7 @@ func TestCreateRemotePaymentHandler(t *testing.T) {
 	t.Run("successfully creates remote payment", func(t *testing.T) {
 		mockProvider := &MockRefundEnhancedProvider{
 			CreateRemotePaymentFunc: func(ctx context.Context, req domain.RemotePaymentRequest) (*domain.RemotePaymentResponse, error) {
-				if req.DeviceToken != "test-token" {
+				if req.DeviceToken != 2 {
 					return nil, fmt.Errorf("invalid device token")
 				}
 
@@ -267,7 +267,7 @@ func TestCreateRemotePaymentHandler(t *testing.T) {
 			"OrganizationBin": "180340021791",
 			"Amount": 100.00,
 			"PhoneNumber": "87071234567",
-			"DeviceToken": "test-token",
+			"DeviceToken": 2,
 			"Comment": "Test payment"
 		}`
 		req, err := http.NewRequest("POST", "/remote/create", strings.NewReader(reqBody))
@@ -318,7 +318,7 @@ func TestCreateRemotePaymentHandler(t *testing.T) {
 		reqBody := `{
 			"OrganizationBin": "180340021791",
 			"Amount": 100.00,
-			"DeviceToken": "test-token"
+			"DeviceToken": 2
 		}`
 		req, err := http.NewRequest("POST", "/remote/create", strings.NewReader(reqBody))
 		if err != nil {
@@ -357,7 +357,7 @@ func TestCancelRemotePaymentHandler(t *testing.T) {
 	t.Run("successfully cancels remote payment", func(t *testing.T) {
 		mockProvider := &MockRefundEnhancedProvider{
 			CancelRemotePaymentFunc: func(ctx context.Context, req domain.RemotePaymentCancelRequest) (*domain.RemotePaymentCancelResponse, error) {
-				if req.DeviceToken != "test-token" {
+				if req.DeviceToken != 2 {
 					return nil, fmt.Errorf("invalid device token")
 				}
 
@@ -380,7 +380,7 @@ func TestCancelRemotePaymentHandler(t *testing.T) {
 		reqBody := `{
 			"OrganizationBin": "180340021791",
 			"QrPaymentId": 15,
-			"DeviceToken": "test-token"
+			"DeviceToken": 2
 		}`
 		req, err := http.NewRequest("POST", "/remote/cancel", strings.NewReader(reqBody))
 		if err != nil {
@@ -429,7 +429,7 @@ func TestCancelRemotePaymentHandler(t *testing.T) {
 
 		reqBody := `{
 			"OrganizationBin": "180340021791",
-			"DeviceToken": "test-token"
+			"DeviceToken": 2
 		}`
 		req, err := http.NewRequest("POST", "/remote/cancel", strings.NewReader(reqBody))
 		if err != nil {
@@ -476,7 +476,7 @@ func TestCancelRemotePaymentHandler(t *testing.T) {
 		reqBody := `{
 			"OrganizationBin": "180340021791",
 			"QrPaymentId": 999,
-			"DeviceToken": "test-token"
+			"DeviceToken": 2
 		}`
 		req, err := http.NewRequest("POST", "/remote/cancel", strings.NewReader(reqBody))
 		if err != nil {
