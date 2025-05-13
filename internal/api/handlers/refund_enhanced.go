@@ -4,11 +4,12 @@ import (
 	"context"
 	"kaspi-api-wrapper/internal/domain"
 	"net/http"
+	"strconv"
 )
 
 type RefundEnhancedProvider interface {
 	RefundPaymentEnhanced(ctx context.Context, req domain.EnhancedRefundRequest) (*domain.RefundResponse, error)
-	GetClientInfo(ctx context.Context, phoneNumber, deviceToken string) (*domain.ClientInfoResponse, error)
+	GetClientInfo(ctx context.Context, phoneNumber string, deviceToken int64) (*domain.ClientInfoResponse, error)
 	CreateRemotePayment(ctx context.Context, req domain.RemotePaymentRequest) (*domain.RemotePaymentResponse, error)
 	CancelRemotePayment(ctx context.Context, req domain.RemotePaymentCancelRequest) (*domain.RemotePaymentCancelResponse, error)
 }
@@ -58,6 +59,12 @@ func (h *Handlers) GetClientInfo(w http.ResponseWriter, r *http.Request) {
 	phoneNumber := r.URL.Query().Get("phoneNumber")
 	deviceToken := r.URL.Query().Get("deviceToken")
 
+	deviceTokenInt64, err := strconv.ParseInt(deviceToken, 10, 64)
+	if err != nil {
+		BadRequestError(w, "deviceToken is invalid")
+		return
+	}
+
 	if phoneNumber == "" {
 		BadRequestError(w, "phoneNumber is required")
 		return
@@ -68,7 +75,7 @@ func (h *Handlers) GetClientInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	info, err := h.refundEnhancedProvider.GetClientInfo(r.Context(), phoneNumber, deviceToken)
+	info, err := h.refundEnhancedProvider.GetClientInfo(r.Context(), phoneNumber, deviceTokenInt64)
 	if err != nil {
 		h.log.Error("failed to get client info", "error", err.Error())
 		HandleKaspiError(w, err, h.log)
@@ -88,7 +95,7 @@ func (h *Handlers) CreateRemotePayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == "" {
+	if req.DeviceToken == 0 {
 		BadRequestError(w, "DeviceToken is required")
 		return
 	}
@@ -127,7 +134,7 @@ func (h *Handlers) CancelRemotePayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == "" {
+	if req.DeviceToken == 0 {
 		BadRequestError(w, "DeviceToken is required")
 		return
 	}

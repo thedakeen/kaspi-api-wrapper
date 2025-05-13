@@ -34,7 +34,7 @@ type EnhancedRefundRequest struct {
 
 type ClientInfoRequest struct {
 	PhoneNumber string `json:"PhoneNumber"`
-	DeviceToken string `json:"DeviceToken"`
+	DeviceToken int64  `json:"DeviceToken"`
 }
 
 type ClientInfoResponse struct {
@@ -45,7 +45,7 @@ type RemotePaymentRequest struct {
 	OrganizationBin string  `json:"OrganizationBin"`
 	Amount          float64 `json:"Amount"`
 	PhoneNumber     string  `json:"PhoneNumber"`
-	DeviceToken     string  `json:"DeviceToken"`
+	DeviceToken     int64   `json:"DeviceToken"`
 	Comment         string  `json:"Comment,omitempty"`
 }
 
@@ -56,7 +56,7 @@ type RemotePaymentResponse struct {
 type RemotePaymentCancelRequest struct {
 	OrganizationBin string `json:"OrganizationBin"`
 	QrPaymentID     int64  `json:"QrPaymentId"`
-	DeviceToken     string `json:"DeviceToken"`
+	DeviceToken     int64  `json:"DeviceToken"`
 }
 
 type RemotePaymentCancelResponse struct {

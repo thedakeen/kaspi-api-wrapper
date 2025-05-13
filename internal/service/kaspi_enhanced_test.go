@@ -9,6 +9,7 @@ import (
 	"kaspi-api-wrapper/internal/service"
 	"kaspi-api-wrapper/internal/testutils"
 	"net/http"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -432,8 +433,14 @@ func TestGetClientInfo(t *testing.T) {
 				t.Errorf("Expected phoneNumber 87071234567, got %s", req.URL.Query().Get("phoneNumber"))
 			}
 
-			if req.URL.Query().Get("deviceToken") != "test-token" {
-				t.Errorf("Expected deviceToken test-token, got %s", req.URL.Query().Get("deviceToken"))
+			deviceTokenStr := req.URL.Query().Get("deviceToken")
+			deviceToken, err := strconv.ParseInt(deviceTokenStr, 10, 64)
+			if err != nil {
+				t.Fatalf("Cannot convert deviceToken")
+			}
+
+			if deviceToken != 2 {
+				t.Errorf("Expected deviceToken 2, got %s", req.URL.Query().Get("deviceToken"))
 			}
 
 			return testutils.NewMockResponse(http.StatusOK, `{
@@ -445,7 +452,7 @@ func TestGetClientInfo(t *testing.T) {
 			}`), nil
 		}
 
-		info, err := svc.GetClientInfo(context.Background(), "87071234567", "test-token")
+		info, err := svc.GetClientInfo(context.Background(), "87071234567", 2)
 
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
@@ -484,7 +491,7 @@ func TestCreateRemotePayment(t *testing.T) {
 			OrganizationBin: "180340021791",
 			Amount:          100.00,
 			PhoneNumber:     "87071234567",
-			DeviceToken:     "test-token",
+			DeviceToken:     2,
 			Comment:         "Test payment",
 		})
 
@@ -505,7 +512,7 @@ func TestCreateRemotePayment(t *testing.T) {
 			OrganizationBin: "180340021791",
 			Amount:          100.00,
 			PhoneNumber:     "87071234567",
-			DeviceToken:     "test-token",
+			DeviceToken:     2,
 			Comment:         "Test payment",
 		})
 
@@ -545,7 +552,7 @@ func TestCancelRemotePayment(t *testing.T) {
 		resp, err := svc.CancelRemotePayment(context.Background(), domain.RemotePaymentCancelRequest{
 			OrganizationBin: "180340021791",
 			QrPaymentID:     15,
-			DeviceToken:     "test-token",
+			DeviceToken:     2,
 		})
 
 		if err != nil {
@@ -564,7 +571,7 @@ func TestCancelRemotePayment(t *testing.T) {
 		_, err := svc.CancelRemotePayment(context.Background(), domain.RemotePaymentCancelRequest{
 			OrganizationBin: "180340021791",
 			QrPaymentID:     15,
-			DeviceToken:     "test-token",
+			DeviceToken:     2,
 		})
 
 		if err == nil {

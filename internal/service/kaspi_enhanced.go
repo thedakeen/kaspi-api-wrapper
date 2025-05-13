@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 /*
@@ -210,18 +211,18 @@ func (s *KaspiService) RefundPaymentEnhanced(ctx context.Context, req domain.Enh
 }
 
 // GetClientInfo retrieves client information by phone number (4.6.1)
-func (s *KaspiService) GetClientInfo(ctx context.Context, phoneNumber, deviceToken string) (*domain.ClientInfoResponse, error) {
+func (s *KaspiService) GetClientInfo(ctx context.Context, phoneNumber string, deviceToken int64) (*domain.ClientInfoResponse, error) {
 	const op = "service.kaspi.GetClientInfo"
 
 	log := s.log.With(
 		slog.String("op", op),
-		slog.String("deviceToken", deviceToken),
+		slog.Int64("deviceToken", deviceToken),
 	)
 
 	log.Debug("getting client information by phone number")
 
 	path := fmt.Sprintf("/remote/client-info?phoneNumber=%s&deviceToken=%s",
-		url.QueryEscape(phoneNumber), url.QueryEscape(deviceToken))
+		url.QueryEscape(phoneNumber), url.QueryEscape(strconv.FormatInt(deviceToken, 10)))
 
 	var result domain.ClientInfoResponse
 	err := s.request(ctx, http.MethodGet, path, nil, &result)
@@ -244,7 +245,7 @@ func (s *KaspiService) CreateRemotePayment(ctx context.Context, req domain.Remot
 
 	log := s.log.With(
 		slog.String("op", op),
-		slog.String("deviceToken", req.DeviceToken),
+		slog.Int64("deviceToken", req.DeviceToken),
 		slog.Float64("amount", req.Amount),
 	)
 
@@ -273,7 +274,7 @@ func (s *KaspiService) CancelRemotePayment(ctx context.Context, req domain.Remot
 
 	log := s.log.With(
 		slog.String("op", op),
-		slog.String("deviceToken", req.DeviceToken),
+		slog.Int64("deviceToken", req.DeviceToken),
 		slog.Int64("qrPaymentID", req.QrPaymentID),
 	)
 
