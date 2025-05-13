@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package kaspi.api.v1;
+
+option go_package = "kaspi-api-wrapper/api/proto/kaspi/v1;kaspiv1";
+
+service DeviceService {
+  // Basic/Standard scheme methods
+  rpc GetTradePoints(GetTradePointsRequest) returns (GetTradePointsResponse);
+  rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse);
+  rpc DeleteDevice(DeleteDeviceRequest) returns (DeleteDeviceResponse);
+
+  // Enhanced scheme methods
+  rpc GetTradePointsEnhanced(GetTradePointsEnhancedRequest) returns (GetTradePointsResponse);
+  rpc RegisterDeviceEnhanced(RegisterDeviceEnhancedRequest) returns (RegisterDeviceResponse);
+  rpc DeleteDeviceEnhanced(DeleteDeviceEnhancedRequest) returns (DeleteDeviceResponse);
+}
+
+message GetTradePointsRequest {}
+
+message GetTradePointsResponse {
+  repeated TradePoint tradepoints = 1;
+}
+
+message TradePoint {
+  int64 tradepoint_id = 1;
+  string tradepoint_name = 2;
+}
+
+message RegisterDeviceRequest {
+  string device_id = 1;
+  int64 tradepoint_id = 2;
+}
+
+message RegisterDeviceResponse {
+  string device_token = 1;
+}
+
+message DeleteDeviceRequest {
+  string device_token = 1;
+}
+
+message DeleteDeviceResponse {}
+
+message GetTradePointsEnhancedRequest {
+  string organization_bin = 1;
+}
+
+message RegisterDeviceEnhancedRequest {
+  string device_id = 1;
+  int64 tradepoint_id = 2;
+  string organization_bin = 3;
+}
+
+message DeleteDeviceEnhancedRequest {
+  string device_token = 1;
+  string organization_bin = 2;
+}

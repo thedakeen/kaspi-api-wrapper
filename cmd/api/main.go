@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"kaspi-api-wrapper/internal/api/handlers"
+	"kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/app"
 	"kaspi-api-wrapper/internal/config"
 	"kaspi-api-wrapper/internal/service"
@@ -62,9 +62,9 @@ func main() {
 		storage,
 	)
 
-	h := handlers.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
+	h := http.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
 
-	application := app.New(log, cfg.HTTPPort, h, cfg.KaspiAPI.Scheme)
+	application := app.New(log, cfg.HTTPPort, h, cfg.KaspiAPI.Scheme, cfg.GRPCPort, kaspiService)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
@@ -72,6 +72,14 @@ func main() {
 	go func() {
 		defer wg.Done()
 		if err := application.HTTPSrv.Run(ctx); err != nil {
+			log.Error("failed to start application", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err := application.GRPCSrv.Run(); err != nil {
 			log.Error("failed to start application", "error", err)
 			os.Exit(1)
 		}

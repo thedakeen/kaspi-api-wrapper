@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package kaspi.api.v1;
+
+import "google/protobuf/timestamp.proto";
+
+
+option go_package = "kaspi-api-wrapper/api/proto/kaspi/v1;kaspiv1";
+
+service RefundService {
+  rpc CreateRefundQR(CreateRefundQRRequest) returns (CreateRefundQRResponse);
+  rpc GetRefundStatus(GetRefundStatusRequest) returns (GetRefundStatusResponse);
+  rpc GetCustomerOperations(GetCustomerOperationsRequest) returns (GetCustomerOperationsResponse);
+  rpc GetPaymentDetails(GetPaymentDetailsRequest) returns (GetPaymentDetailsResponse);
+  rpc RefundPayment(RefundPaymentRequest) returns (RefundPaymentResponse);
+}
+
+message QRRefundBehaviorOptions {
+  int32 qr_code_scan_event_polling_interval = 1;
+  int32 qr_code_scan_wait_timeout = 2;
+}
+
+message CreateRefundQRRequest {
+  string device_token = 1;
+  string external_id = 2;
+}
+
+message CreateRefundQRResponse {
+  string qr_token = 1;
+  google.protobuf.Timestamp expire_date = 2;
+  int64 qr_return_id = 3;
+  QRRefundBehaviorOptions qr_refund_behavior_options = 4;
+}
+
+message GetRefundStatusRequest {
+  int64 qr_return_id = 1;
+}
+
+message GetRefundStatusResponse {
+  string status = 1;
+}
+
+message GetCustomerOperationsRequest {
+  string device_token = 1;
+  int64 qr_return_id = 2;
+  int64 max_result = 3;
+}
+
+message CustomerOperation {
+  int64 qr_payment_id = 1;
+  google.protobuf.Timestamp transaction_date = 2;
+  double amount = 3;
+}
+
+message GetCustomerOperationsResponse {
+  repeated CustomerOperation operations = 1;
+}
+
+message GetPaymentDetailsRequest {
+  int64 qr_payment_id = 1;
+  string device_token = 2;
+}
+
+message GetPaymentDetailsResponse {
+  int64 qr_payment_id = 1;
+  double total_amount = 2;
+  double available_return_amount = 3;
+  google.protobuf.Timestamp transaction_date = 4;
+}
+
+message RefundPaymentRequest {
+  string device_token = 1;
+  int64 qr_payment_id = 2;
+  int64 qr_return_id = 3;
+  double amount = 4;
+}
+
+message RefundPaymentResponse {
+  int64 return_operation_id = 1;
+}

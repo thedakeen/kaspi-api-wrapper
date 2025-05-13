@@ -1,21 +1,26 @@
 package app
 
 import (
-	"kaspi-api-wrapper/internal/api/handlers"
+	"kaspi-api-wrapper/internal/api/http"
+	grpcapp "kaspi-api-wrapper/internal/app/grpc"
 	"kaspi-api-wrapper/internal/app/http"
+	"kaspi-api-wrapper/internal/service"
 	"log/slog"
 )
 
 type App struct {
-	HTTPSrv  *http.App
-	Handlers *handlers.Handlers
+	HTTPSrv  *httpapp.App
+	GRPCSrv  *grpcapp.App
+	Handlers *http.Handlers
 }
 
-func New(log *slog.Logger, httpPort int, handlers *handlers.Handlers, scheme string) *App {
-	httpApp := http.New(log, httpPort, handlers, scheme)
+func New(log *slog.Logger, httpPort int, handlers *http.Handlers, scheme string, grpcPort int, kaspiService *service.KaspiService) *App {
+	httpApp := httpapp.New(log, httpPort, handlers, scheme)
+	grcpApp := grpcapp.New(log, grpcPort, kaspiService)
 
 	return &App{
 		httpApp,
+		grcpApp,
 		handlers,
 	}
 }

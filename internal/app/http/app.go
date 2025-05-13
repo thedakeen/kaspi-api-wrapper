@@ -1,11 +1,10 @@
-package http
+package httpapp
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"kaspi-api-wrapper/internal/api"
-	"kaspi-api-wrapper/internal/api/handlers"
+	httphandler "kaspi-api-wrapper/internal/api/http"
 	"log/slog"
 	"net"
 	"net/http"
@@ -15,11 +14,11 @@ type App struct {
 	log      *slog.Logger
 	httpPort int
 	server   *http.Server
-	handlers *handlers.Handlers
+	handlers *httphandler.Handlers
 	scheme   string
 }
 
-func New(log *slog.Logger, httpPort int, handlers *handlers.Handlers, scheme string) *App {
+func New(log *slog.Logger, httpPort int, handlers *httphandler.Handlers, scheme string) *App {
 	return &App{
 		log:      log,
 		httpPort: httpPort,
@@ -36,7 +35,7 @@ func (app *App) Run(ctx context.Context) error {
 		slog.Int("port", app.httpPort),
 	)
 
-	router := api.NewRouter(app.log, app.handlers, app.scheme)
+	router := httphandler.NewRouter(app.log, app.handlers, app.scheme)
 	r := router.Setup()
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", app.httpPort))
