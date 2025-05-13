@@ -2,6 +2,7 @@ package http
 
 import (
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 )
 
@@ -12,18 +13,9 @@ func (h *Handlers) CreateQREnhanced(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.Amount <= 0 {
-		BadRequestError(w, "Amount must be greater than zero")
-		return
-	}
-
-	if req.OrganizationBin == "" {
-		BadRequestError(w, "OrganizationBin is required")
+	if err := validator.ValidateEnhancedQRCreateRequest(req); err != nil {
+		h.log.Warn("invalid enhanced QR create request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
@@ -47,18 +39,9 @@ func (h *Handlers) CreatePaymentLinkEnhanced(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.Amount <= 0 {
-		BadRequestError(w, "Amount must be greater than zero")
-		return
-	}
-
-	if req.OrganizationBin == "" {
-		BadRequestError(w, "OrganizationBin is required")
+	if err := validator.ValidateEnhancedPaymentLinkCreateRequest(req); err != nil {
+		h.log.Warn("invalid enhanced payment link create request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 

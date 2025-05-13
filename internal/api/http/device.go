@@ -2,6 +2,7 @@ package http
 
 import (
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 )
 
@@ -27,13 +28,9 @@ func (h *Handlers) RegisterDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceID == "" {
-		BadRequestError(w, "DeviceID is required")
-		return
-	}
-
-	if req.TradePointID == 0 {
-		BadRequestError(w, "TradePointID is required")
+	if err := validator.ValidateDeviceRegisterRequest(req); err != nil {
+		h.log.Warn("invalid device register request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
@@ -60,8 +57,9 @@ func (h *Handlers) DeleteDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "device token is required")
+	if err := validator.ValidateDeviceToken(req.DeviceToken); err != nil {
+		h.log.Warn("invalid device token", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
