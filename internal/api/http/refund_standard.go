@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/go-chi/chi/v5"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"strconv"
 )
@@ -13,8 +14,9 @@ func (h *Handlers) CreateRefundQR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
+	if err := validator.ValidateQRRefundCreateRequest(req); err != nil {
+		h.log.Warn("invalid refund QR create request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
@@ -60,13 +62,9 @@ func (h *Handlers) GetCustomerOperations(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.QrReturnID == 0 {
-		BadRequestError(w, "QrReturnId is required")
+	if err := validator.ValidateCustomerOperationsRequest(req); err != nil {
+		h.log.Warn("invalid customer operations request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
@@ -88,19 +86,15 @@ func (h *Handlers) GetPaymentDetails(w http.ResponseWriter, r *http.Request) {
 	qrPaymentIDStr := r.URL.Query().Get("QrPaymentId")
 	deviceToken := r.URL.Query().Get("DeviceToken")
 
-	if qrPaymentIDStr == "" {
-		BadRequestError(w, "QrPaymentId is required")
-		return
-	}
-
-	if deviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
 	qrPaymentID, err := strconv.ParseInt(qrPaymentIDStr, 10, 64)
 	if err != nil {
 		BadRequestError(w, "Invalid payment ID format")
+		return
+	}
+
+	if err := validator.ValidatePaymentDetailsRequest(qrPaymentID, deviceToken); err != nil {
+		h.log.Warn("invalid payment details request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
@@ -124,23 +118,9 @@ func (h *Handlers) RefundPayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.QrPaymentID == 0 {
-		BadRequestError(w, "QrPaymentId is required")
-		return
-	}
-
-	if req.QrReturnID == 0 {
-		BadRequestError(w, "QrReturnId is required")
-		return
-	}
-
-	if req.Amount <= 0 {
-		BadRequestError(w, "Amount must be greater than zero")
+	if err := validator.ValidateRefundRequest(req); err != nil {
+		h.log.Warn("invalid refund request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 

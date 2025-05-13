@@ -52,12 +52,6 @@ func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Field, e.Message)
 }
 
-func (e *ValidationError) Unwrap() error {
-	return e.Err
-}
-
-// Device Validation Functions
-
 // ValidateDeviceRegisterRequest validates a device registration request
 func ValidateDeviceRegisterRequest(req domain.DeviceRegisterRequest) error {
 	if req.DeviceID == "" {

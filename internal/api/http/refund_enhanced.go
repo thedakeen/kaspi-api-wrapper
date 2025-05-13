@@ -2,6 +2,7 @@ package http
 
 import (
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"strconv"
 )
@@ -13,23 +14,9 @@ func (h *Handlers) RefundPaymentEnhanced(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.QrPaymentID == 0 {
-		BadRequestError(w, "QrPaymentId is required")
-		return
-	}
-
-	if req.Amount <= 0 {
-		BadRequestError(w, "Amount must be greater than zero")
-		return
-	}
-
-	if req.OrganizationBin == "" {
-		BadRequestError(w, "OrganizationBin is required")
+	if err := validator.ValidateEnhancedRefundRequest(req); err != nil {
+		h.log.Warn("invalid enhanced refund request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
@@ -87,23 +74,9 @@ func (h *Handlers) CreateRemotePayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == 0 {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.PhoneNumber == "" {
-		BadRequestError(w, "PhoneNumber is required")
-		return
-	}
-
-	if req.Amount <= 0 {
-		BadRequestError(w, "Amount must be greater than zero")
-		return
-	}
-
-	if req.OrganizationBin == "" {
-		BadRequestError(w, "OrganizationBin is required")
+	if err := validator.ValidateRemotePaymentRequest(req); err != nil {
+		h.log.Warn("invalid remote payment request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 

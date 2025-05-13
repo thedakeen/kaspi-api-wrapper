@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
-	"kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/app"
 	"kaspi-api-wrapper/internal/config"
 	"kaspi-api-wrapper/internal/service"
@@ -35,7 +33,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	wg.Add(1)
+	wg.Add(2)
 
 	log.Debug("debug enabled")
 
@@ -63,13 +61,7 @@ func main() {
 		storage,
 	)
 
-	httpHandler := http.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
-	grpcHandler := grpchandler.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
-
-	application := app.New(log, cfg.HTTPPort, httpHandler, cfg.KaspiAPI.Scheme, cfg.GRPCPort, grpcHandler)
-
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+	application := app.New(log, cfg.HTTPPort, cfg.KaspiAPI.Scheme, cfg.GRPCPort, kaspiService)
 
 	go func() {
 		defer wg.Done()
@@ -87,6 +79,9 @@ func main() {
 		}
 	}()
 
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
 	log.Info("application started")
 
 	// Wait for interrupt signal
@@ -96,6 +91,7 @@ func main() {
 
 	// Stop application
 	application.HTTPSrv.Stop(ctx)
+	application.GRPCSrv.Stop()
 
 	wg.Wait()
 

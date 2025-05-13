@@ -3,12 +3,14 @@ package http
 import (
 	"github.com/go-chi/chi/v5"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 )
 
 // GetTradePointsEnhanced handles a request to get trade points in the enhanced scheme (4.2.2)
 func (h *Handlers) GetTradePointsEnhanced(w http.ResponseWriter, r *http.Request) {
 	organizationBin := chi.URLParam(r, "organizationBin")
+
 	if organizationBin == "" {
 		BadRequestError(w, "OrganizationBin is required")
 		return
@@ -34,18 +36,9 @@ func (h *Handlers) RegisterDeviceEnhanced(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if req.DeviceID == "" {
-		BadRequestError(w, "DeviceID is required")
-		return
-	}
-
-	if req.TradePointID == 0 {
-		BadRequestError(w, "TradePointID is required")
-		return
-	}
-
-	if req.OrganizationBin == "" {
-		BadRequestError(w, "OrganizationBin is required")
+	if err := validator.ValidateEnhancedDeviceRegisterRequest(req); err != nil {
+		h.log.Warn("invalid enhanced device register request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
@@ -69,13 +62,9 @@ func (h *Handlers) DeleteDeviceEnhanced(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.OrganizationBin == "" {
-		BadRequestError(w, "OrganizationBin is required")
+	if err := validator.ValidateEnhancedDeviceDeleteRequest(req); err != nil {
+		h.log.Warn("invalid enhanced device delete request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 

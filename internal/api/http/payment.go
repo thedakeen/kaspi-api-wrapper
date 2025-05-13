@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/go-chi/chi/v5"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"strconv"
 )
@@ -14,13 +15,9 @@ func (h *Handlers) CreateQR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.Amount <= 0 {
-		BadRequestError(w, "Amount must be greater than zero")
+	if err := validator.ValidateQRCreateRequest(req); err != nil {
+		h.log.Warn("invalid QR create request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
@@ -44,14 +41,9 @@ func (h *Handlers) CreatePaymentLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate request
-	if req.DeviceToken == "" {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.Amount <= 0 {
-		BadRequestError(w, "Amount must be greater than zero")
+	if err := validator.ValidatePaymentLinkCreateRequest(req); err != nil {
+		h.log.Warn("invalid payment link create request", "error", err.Error())
+		validator.HTTPError(w, err)
 		return
 	}
 
