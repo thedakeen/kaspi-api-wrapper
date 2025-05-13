@@ -5,6 +5,7 @@ import (
 	"google.golang.org/grpc"
 	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/api/grpc/device"
+	grpcmiddleware "kaspi-api-wrapper/internal/api/grpc/middleware"
 	"kaspi-api-wrapper/internal/api/grpc/payment"
 	"kaspi-api-wrapper/internal/api/grpc/refund"
 	"kaspi-api-wrapper/internal/api/grpc/refund_enhanced"
@@ -19,15 +20,15 @@ type App struct {
 	grpcPort   int
 }
 
-func New(log *slog.Logger, grpcPort int, handlers *grpchandler.Handlers,
-) *App {
-	gRPCServer := grpc.NewServer()
+func New(log *slog.Logger, grpcPort int, handlers *grpchandler.Handlers, scheme string) *App {
+	gRPCServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpcmiddleware.SchemeInterceptor(scheme)))
 
-	device.Register(gRPCServer, handlers.DeviceProvider, handlers.DeviceEnhancedProvider)
-	payment.Register(gRPCServer, handlers.PaymentProvider, handlers.PaymentEnhancedProvider)
-	refund.Register(gRPCServer, handlers.RefundProvider)
-	refund_enhanced.Register(gRPCServer, handlers.RefundEnhancedProvider)
-	utility.Register(gRPCServer, handlers.UtilityProvider)
+	device.Register(gRPCServer, log, handlers.DeviceProvider, handlers.DeviceEnhancedProvider)
+	payment.Register(gRPCServer, log, handlers.PaymentProvider, handlers.PaymentEnhancedProvider)
+	refund.Register(gRPCServer, log, handlers.RefundProvider)
+	refund_enhanced.Register(gRPCServer, log, handlers.RefundEnhancedProvider)
+	utility.Register(gRPCServer, log, handlers.UtilityProvider)
 
 	return &App{
 		log:        log,
