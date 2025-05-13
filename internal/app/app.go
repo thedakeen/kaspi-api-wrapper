@@ -17,7 +17,7 @@ type App struct {
 
 func New(log *slog.Logger, httpPort int, httpHandlers *http.Handlers, scheme string, grpcPort int, grpcHandlers *grpchandler.Handlers) *App {
 	httpApp := httpapp.New(log, httpPort, httpHandlers, scheme)
-	grpcApp := grpcapp.New(log, grpcPort, grpcHandlers)
+	grpcApp := grpcapp.New(log, grpcPort, grpcHandlers, scheme)
 
 	return &App{
 		httpApp,

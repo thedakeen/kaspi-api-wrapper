@@ -29,7 +29,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EnhancedRefundServiceClient interface {
-	RefundPaymentEnhanced(ctx context.Context, in *RefundPaymentEnhancedRequest, opts ...grpc.CallOption) (*RefundPaymentResponse, error)
+	RefundPaymentEnhanced(ctx context.Context, in *RefundPaymentEnhancedRequest, opts ...grpc.CallOption) (*RefundPaymentEnhancedResponse, error)
 	GetClientInfo(ctx context.Context, in *GetClientInfoRequest, opts ...grpc.CallOption) (*GetClientInfoResponse, error)
 	CreateRemotePayment(ctx context.Context, in *CreateRemotePaymentRequest, opts ...grpc.CallOption) (*CreateRemotePaymentResponse, error)
 	CancelRemotePayment(ctx context.Context, in *CancelRemotePaymentRequest, opts ...grpc.CallOption) (*CancelRemotePaymentResponse, error)
@@ -43,9 +43,9 @@ func NewEnhancedRefundServiceClient(cc grpc.ClientConnInterface) EnhancedRefundS
 	return &enhancedRefundServiceClient{cc}
 }
 
-func (c *enhancedRefundServiceClient) RefundPaymentEnhanced(ctx context.Context, in *RefundPaymentEnhancedRequest, opts ...grpc.CallOption) (*RefundPaymentResponse, error) {
+func (c *enhancedRefundServiceClient) RefundPaymentEnhanced(ctx context.Context, in *RefundPaymentEnhancedRequest, opts ...grpc.CallOption) (*RefundPaymentEnhancedResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RefundPaymentResponse)
+	out := new(RefundPaymentEnhancedResponse)
 	err := c.cc.Invoke(ctx, EnhancedRefundService_RefundPaymentEnhanced_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (c *enhancedRefundServiceClient) CancelRemotePayment(ctx context.Context, i
 // All implementations must embed UnimplementedEnhancedRefundServiceServer
 // for forward compatibility.
 type EnhancedRefundServiceServer interface {
-	RefundPaymentEnhanced(context.Context, *RefundPaymentEnhancedRequest) (*RefundPaymentResponse, error)
+	RefundPaymentEnhanced(context.Context, *RefundPaymentEnhancedRequest) (*RefundPaymentEnhancedResponse, error)
 	GetClientInfo(context.Context, *GetClientInfoRequest) (*GetClientInfoResponse, error)
 	CreateRemotePayment(context.Context, *CreateRemotePaymentRequest) (*CreateRemotePaymentResponse, error)
 	CancelRemotePayment(context.Context, *CancelRemotePaymentRequest) (*CancelRemotePaymentResponse, error)
@@ -101,7 +101,7 @@ type EnhancedRefundServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedEnhancedRefundServiceServer struct{}
 
-func (UnimplementedEnhancedRefundServiceServer) RefundPaymentEnhanced(context.Context, *RefundPaymentEnhancedRequest) (*RefundPaymentResponse, error) {
+func (UnimplementedEnhancedRefundServiceServer) RefundPaymentEnhanced(context.Context, *RefundPaymentEnhancedRequest) (*RefundPaymentEnhancedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefundPaymentEnhanced not implemented")
 }
 func (UnimplementedEnhancedRefundServiceServer) GetClientInfo(context.Context, *GetClientInfoRequest) (*GetClientInfoResponse, error) {
