@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/app"
 	"kaspi-api-wrapper/internal/config"
@@ -62,9 +63,10 @@ func main() {
 		storage,
 	)
 
-	h := http.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
+	httpHandler := http.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
+	grpcHandler := grpchandler.NewHandlers(log, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService, kaspiService)
 
-	application := app.New(log, cfg.HTTPPort, h, cfg.KaspiAPI.Scheme, cfg.GRPCPort, kaspiService)
+	application := app.New(log, cfg.HTTPPort, httpHandler, cfg.KaspiAPI.Scheme, cfg.GRPCPort, grpcHandler)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)

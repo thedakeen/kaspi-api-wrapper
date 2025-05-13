@@ -8,14 +8,14 @@ import (
 // Handlers contains all gRPC handlers for the API
 type Handlers struct {
 	log             *slog.Logger
-	deviceProvider  api.DeviceProvider
-	paymentProvider api.PaymentProvider
-	utilityProvider api.UtilityProvider
-	refundProvider  api.RefundProvider
+	DeviceProvider  api.DeviceProvider
+	PaymentProvider api.PaymentProvider
+	UtilityProvider api.UtilityProvider
+	RefundProvider  api.RefundProvider
 
-	deviceEnhancedProvider  api.DeviceEnhancedProvider
-	paymentEnhancedProvider api.PaymentEnhancedProvider
-	refundEnhancedProvider  api.RefundEnhancedProvider
+	DeviceEnhancedProvider  api.DeviceEnhancedProvider
+	PaymentEnhancedProvider api.PaymentEnhancedProvider
+	RefundEnhancedProvider  api.RefundEnhancedProvider
 	//kaspiSvc *service.KaspiService
 }
 
@@ -33,14 +33,14 @@ func NewHandlers(
 ) *Handlers {
 	return &Handlers{
 		log:             log,
-		deviceProvider:  deviceProvider,
-		paymentProvider: paymentProvider,
-		utilityProvider: utilityProvider,
-		refundProvider:  refundProvider,
+		DeviceProvider:  deviceProvider,
+		PaymentProvider: paymentProvider,
+		UtilityProvider: utilityProvider,
+		RefundProvider:  refundProvider,
 
-		deviceEnhancedProvider:  deviceEnhancedProvider,
-		paymentEnhancedProvider: paymentEnhancedProvider,
-		refundEnhancedProvider:  refundEnhancedProvider,
+		DeviceEnhancedProvider:  deviceEnhancedProvider,
+		PaymentEnhancedProvider: paymentEnhancedProvider,
+		RefundEnhancedProvider:  refundEnhancedProvider,
 		//kaspiSvc: kaspiSvc,
 	}
 }
