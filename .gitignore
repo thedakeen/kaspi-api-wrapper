@@ -1,4 +1,4 @@
 .env
 .idea
-dumps/*
+dumps/kaspi_pay.custom
 !.gitignore

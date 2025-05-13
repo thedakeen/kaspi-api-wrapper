@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package kaspi.api.v1;
+
+option go_package = "kaspi-api-wrapper/api/proto/kaspi/v1;kaspiv1";
+
+service UtilityService {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc TestScanQR(TestScanQRRequest) returns (TestScanQRResponse);
+  rpc TestConfirmPayment(TestConfirmPaymentRequest) returns (TestConfirmPaymentResponse);
+  rpc TestScanError(TestScanErrorRequest) returns (TestScanErrorResponse);
+  rpc TestConfirmError(TestConfirmErrorRequest) returns (TestConfirmErrorResponse);
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;
+}
+
+message TestScanQRRequest {
+  string qr_payment_id = 1;
+}
+
+message TestScanQRResponse {
+  string message = 1;
+}
+
+message TestConfirmPaymentRequest {
+  string qr_payment_id = 1;
+}
+
+message TestConfirmPaymentResponse {
+  string message = 1;
+}
+
+message TestScanErrorRequest {
+  string qr_payment_id = 1;
+}
+
+message TestScanErrorResponse {
+  string message = 1;
+}
+
+message TestConfirmErrorRequest {
+  string qr_payment_id = 1;
+}
+
+message TestConfirmErrorResponse {
+  string message = 1;
+}

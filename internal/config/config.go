@@ -9,6 +9,7 @@ type Config struct {
 	Env string `env:"ENV" env-default:"dev"`
 
 	HTTPPort int `env:"HTTP_PORT"`
+	GRPCPort int `env:"GRPC_PORT"`
 	KaspiAPI KaspiAPI
 	Database Database
 }
