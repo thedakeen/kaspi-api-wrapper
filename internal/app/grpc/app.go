@@ -3,8 +3,12 @@ package grpcapp
 import (
 	"fmt"
 	"google.golang.org/grpc"
-	"kaspi-api-wrapper/internal/api/grpc"
+	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/api/grpc/device"
+	"kaspi-api-wrapper/internal/api/grpc/payment"
+	"kaspi-api-wrapper/internal/api/grpc/refund"
+	"kaspi-api-wrapper/internal/api/grpc/refund_enhanced"
+	"kaspi-api-wrapper/internal/api/grpc/utility"
 	"log/slog"
 	"net"
 )
@@ -15,10 +19,15 @@ type App struct {
 	grpcPort   int
 }
 
-func New(log *slog.Logger, grpcPort int, handlers *grpchandler.Handlers) *App {
+func New(log *slog.Logger, grpcPort int, handlers *grpchandler.Handlers,
+) *App {
 	gRPCServer := grpc.NewServer()
 
-	device.Register(gRPCServer)
+	device.Register(gRPCServer, handlers.DeviceProvider, handlers.DeviceEnhancedProvider)
+	payment.Register(gRPCServer, handlers.PaymentProvider, handlers.PaymentEnhancedProvider)
+	refund.Register(gRPCServer, handlers.RefundProvider)
+	refund_enhanced.Register(gRPCServer, handlers.RefundEnhancedProvider)
+	utility.Register(gRPCServer, handlers.UtilityProvider)
 
 	return &App{
 		log:        log,
