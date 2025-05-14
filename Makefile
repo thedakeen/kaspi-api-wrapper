@@ -56,7 +56,8 @@ setup:
 		DB_CONTAINER_HOST=$$(docker-compose port db 5432 | cut -d ':' -f 1); \
 		CONTAINER_POSTGRES_URI="postgres://$(DB_USER):$(DB_PASSWORD)@$$DB_CONTAINER_HOST:$$(docker-compose port db 5432 | cut -d ':' -f 2)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)"; \
 		echo "Using database connection: $$CONTAINER_POSTGRES_URI"; \
-		migrate -path=./migrations -database=$$CONTAINER_POSTGRES_URI up; \
+		docker run --rm -v $$(pwd)/migrations:/migrations --network host migrate/migrate \
+			-path=/migrations -database=$$CONTAINER_POSTGRES_URI up; \
 		echo "Creating initial dump..."; \
 		$(MAKE) db/dump/create; \
 	fi

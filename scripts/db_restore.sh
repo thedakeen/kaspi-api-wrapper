@@ -16,12 +16,13 @@ if [ ! -f ./dumps/kaspi_pay.custom ]; then
 fi
 
 echo "Checking if DB exists..."
-psql -h $DB_HOST -U $DB_USER -lqt | cut -d \| -f 1 | grep -qw $DB_NAME
-if [ $? -ne 0 ]; then
-    echo "Creating database $DB_NAME..."
+if psql -h $DB_HOST -U $DB_USER -lqt | cut -d \| -f 1 | grep -qw $DB_NAME; then
+    echo "Database $DB_NAME exists. Dropping and recreating..."
+    psql -h $DB_HOST -U $DB_USER -c "DROP DATABASE IF EXISTS $DB_NAME"
     createdb -h $DB_HOST -U $DB_USER $DB_NAME
 else
-    echo "Database $DB_NAME already exists."
+    echo "Creating database $DB_NAME..."
+    createdb -h $DB_HOST -U $DB_USER $DB_NAME
 fi
 
 echo "Restoring data..."
