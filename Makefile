@@ -64,5 +64,6 @@ setup:
 	@echo "Starting all services..."
 	docker-compose up -d
 	@echo "	Setup complete! The application is now running."
-	@echo "   API is available at http://localhost:8080"
+	@echo "   HTTP server is available at http://localhost:8081"
+	@echo "   gRPC server is available at http://localhost:8082"
 	@echo "   You can view logs with: docker-compose logs -f"
