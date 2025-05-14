@@ -31,7 +31,7 @@ func (r *Router) Setup() *chi.Mux {
 
 	router.Get("/health", r.handlers.HealthCheck)
 
-	router.Route("/handlers", func(apiRouter chi.Router) {
+	router.Route("/api", func(apiRouter chi.Router) {
 		// 2.2.2 - Get trade points
 		apiRouter.Get("/tradepoints", r.handlers.GetTradePoints)
 

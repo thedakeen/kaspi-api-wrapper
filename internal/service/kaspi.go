@@ -3,6 +3,8 @@ package service
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +14,7 @@ import (
 	"kaspi-api-wrapper/internal/validator"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -53,23 +56,24 @@ func NewKaspiService(log *slog.Logger,
 			Timeout: 30 * time.Second,
 		}
 	case "standard", "enhanced":
-		httpClient = &http.Client{
-			Timeout: 30 * time.Second,
-		}
-		//cert, err := tls.LoadX509KeyPair(certFile, certFile)
-		//if err != nil {
-		//	log.Error("failed to load certificate", "error", err)
-		//	httpClient = &http.Client{Timeout: 30 * time.Second}
-		//} else {
-		//	tlsConfig := &tls.Config{
-		//		Certificates: []tls.Certificate{cert},
-		//	}
-		//	transport := &http.Transport{TLSClientConfig: tlsConfig}
-		//	httpClient = &http.Client{
-		//		Transport: transport,
-		//		Timeout:   30 * time.Second,
-		//	}
+		//httpClient = &http.Client{
+		//	Timeout: 30 * time.Second,
 		//}
+
+		tlsConfig, err := loadTLSConfig(scheme)
+		if err != nil {
+			log.Error("failed to load TLS config", "error", err)
+			httpClient = &http.Client{Timeout: 30 * time.Second}
+		} else {
+			transport := &http.Transport{
+				TLSClientConfig: tlsConfig,
+			}
+			httpClient = &http.Client{
+				Transport: transport,
+				Timeout:   30 * time.Second,
+			}
+		}
+
 	default:
 		httpClient = &http.Client{Timeout: 30 * time.Second}
 	}
@@ -85,6 +89,33 @@ func NewKaspiService(log *slog.Logger,
 
 		deviceSaver: deviceSaver,
 	}
+}
+
+func loadTLSConfig(scheme string) (*tls.Config, error) {
+	certFile := fmt.Sprintf("certs/%s/client.crt", scheme)
+	keyFile := fmt.Sprintf("certs/%s/client.key", scheme)
+	caCertFile := fmt.Sprintf("certs/%s/ca.crt", scheme)
+
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load client certificate: %w", err)
+	}
+
+	caCert, err := os.ReadFile(caCertFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+	}
+
+	caCertPool := x509.NewCertPool()
+	if !caCertPool.AppendCertsFromPEM(caCert) {
+		return nil, errors.New("failed to append CA certificate")
+	}
+
+	return &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      caCertPool,
+		MinVersion:   tls.VersionTLS12,
+	}, nil
 }
 
 // generateRequestID generates X-Request-ID (2.1)
