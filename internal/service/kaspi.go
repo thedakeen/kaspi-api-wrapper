@@ -9,6 +9,7 @@ import (
 	"io"
 	"kaspi-api-wrapper/internal/domain"
 	"kaspi-api-wrapper/internal/storage"
+	"kaspi-api-wrapper/internal/validator"
 	"log/slog"
 	"net/http"
 	"time"
@@ -235,6 +236,11 @@ func (s *KaspiService) RegisterDevice(ctx context.Context, req domain.DeviceRegi
 		slog.Int64("Trade Point", req.TradePointID),
 	)
 
+	if err := validator.ValidateDeviceRegisterRequest(req); err != nil {
+		log.Warn("invalid device register request", "error", err.Error())
+		return nil, err
+	}
+
 	log.Debug("registering new device")
 
 	path := "/device/register"
@@ -282,6 +288,11 @@ func (s *KaspiService) DeleteDevice(ctx context.Context, deviceToken string) err
 		slog.String("DeviceToken", deviceToken),
 	)
 
+	if err := validator.ValidateDeviceToken(deviceToken); err != nil {
+		log.Warn("invalid device token", "error", err.Error())
+		return err
+	}
+
 	log.Debug("deleting device")
 
 	path := "/device/delete"
@@ -317,6 +328,11 @@ func (s *KaspiService) CreateQR(ctx context.Context, req domain.QRCreateRequest)
 		slog.Float64("amount", req.Amount),
 	)
 
+	if err := validator.ValidateQRCreateRequest(req); err != nil {
+		log.Warn("invalid QR create request", "error", err.Error())
+		return nil, err
+	}
+
 	log.Debug("creating QR token for payment")
 
 	path := "/qr/create"
@@ -346,6 +362,11 @@ func (s *KaspiService) CreatePaymentLink(ctx context.Context, req domain.Payment
 		slog.Float64("amount", req.Amount),
 	)
 
+	if err := validator.ValidatePaymentLinkCreateRequest(req); err != nil {
+		log.Warn("invalid payment link create request", "error", err.Error())
+		return nil, err
+	}
+
 	log.Debug("creating payment link")
 
 	path := "/qr/create-link"
@@ -369,6 +390,14 @@ func (s *KaspiService) GetPaymentStatus(ctx context.Context, qrPaymentID int64) 
 		slog.String("op", op),
 		slog.Int64("qrPaymentID", qrPaymentID),
 	)
+
+	if qrPaymentID <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "qrPaymentId",
+			Message: "Invalid payment ID format",
+			Err:     validator.ErrInvalidID,
+		}
+	}
 
 	log.Debug("getting payment status")
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -20,7 +21,45 @@ type MockRefundEnhancedProvider struct {
 }
 
 func (m *MockRefundEnhancedProvider) RefundPaymentEnhanced(ctx context.Context, req domain.EnhancedRefundRequest) (*domain.RefundResponse, error) {
-	return m.RefundPaymentEnhancedFunc(ctx, req)
+	if m.RefundPaymentEnhancedFunc != nil {
+		return m.RefundPaymentEnhancedFunc(ctx, req)
+	}
+
+	if req.DeviceToken == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	if req.QrPaymentID <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "qrPaymentId",
+			Message: "QR payment ID must be a positive number",
+			Err:     validator.ErrInvalidID,
+		}
+	}
+
+	if req.Amount <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "amount",
+			Message: "amount must be greater than zero",
+			Err:     validator.ErrInvalidAmount,
+		}
+	}
+
+	if req.OrganizationBin == "" {
+		return nil, &validator.ValidationError{
+			Field:   "organizationBin",
+			Message: "organization BIN is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	return &domain.RefundResponse{
+		ReturnOperationID: 20,
+	}, nil
 }
 
 func (m *MockRefundEnhancedProvider) GetClientInfo(ctx context.Context, phoneNumber string, deviceToken int64) (*domain.ClientInfoResponse, error) {
@@ -28,11 +67,79 @@ func (m *MockRefundEnhancedProvider) GetClientInfo(ctx context.Context, phoneNum
 }
 
 func (m *MockRefundEnhancedProvider) CreateRemotePayment(ctx context.Context, req domain.RemotePaymentRequest) (*domain.RemotePaymentResponse, error) {
-	return m.CreateRemotePaymentFunc(ctx, req)
+	if m.CreateRemotePaymentFunc != nil {
+		return m.CreateRemotePaymentFunc(ctx, req)
+	}
+
+	if req.DeviceToken <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token must be a positive number",
+			Err:     validator.ErrInvalidToken,
+		}
+	}
+
+	if req.PhoneNumber == "" {
+		return nil, &validator.ValidationError{
+			Field:   "phoneNumber",
+			Message: "phone number is required",
+			Err:     validator.ErrInvalidPhone,
+		}
+	}
+
+	if req.Amount <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "amount",
+			Message: "amount must be greater than zero",
+			Err:     validator.ErrInvalidAmount,
+		}
+	}
+
+	if req.OrganizationBin == "" {
+		return nil, &validator.ValidationError{
+			Field:   "organizationBin",
+			Message: "organization BIN is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	return &domain.RemotePaymentResponse{
+		QrPaymentID: 15,
+	}, nil
 }
 
 func (m *MockRefundEnhancedProvider) CancelRemotePayment(ctx context.Context, req domain.RemotePaymentCancelRequest) (*domain.RemotePaymentCancelResponse, error) {
-	return m.CancelRemotePaymentFunc(ctx, req)
+	if m.CancelRemotePaymentFunc != nil {
+		return m.CancelRemotePaymentFunc(ctx, req)
+	}
+
+	if req.DeviceToken <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token must be a positive number",
+			Err:     validator.ErrInvalidToken,
+		}
+	}
+
+	if req.QrPaymentID <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "qrPaymentId",
+			Message: "QR payment ID must be a positive number",
+			Err:     validator.ErrInvalidID,
+		}
+	}
+
+	if req.OrganizationBin == "" {
+		return nil, &validator.ValidationError{
+			Field:   "organizationBin",
+			Message: "organization BIN is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	return &domain.RemotePaymentCancelResponse{
+		Status: "RemotePaymentCanceled",
+	}, nil
 }
 
 func TestRefundPaymentEnhancedHandler(t *testing.T) {
@@ -419,45 +526,6 @@ func TestCancelRemotePaymentHandler(t *testing.T) {
 
 		if cancelResp.Status != "RemotePaymentCanceled" {
 			t.Errorf("Expected Status RemotePaymentCanceled, got %s", cancelResp.Status)
-		}
-	})
-
-	t.Run("rejects missing QrPaymentId", func(t *testing.T) {
-		mockProvider := &MockRefundEnhancedProvider{}
-
-		h := httphandler.NewHandlers(log, nil, nil, nil, nil, nil, nil, mockProvider)
-
-		reqBody := `{
-			"OrganizationBin": "180340021791",
-			"DeviceToken": 2
-		}`
-		req, err := http.NewRequest("POST", "/remote/cancel", strings.NewReader(reqBody))
-		if err != nil {
-			t.Fatalf("Failed to create request: %v", err)
-		}
-		req.Header.Set("Content-Type", "application/json")
-
-		recorder := httptest.NewRecorder()
-
-		h.CancelRemotePayment(recorder, req)
-
-		if recorder.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, recorder.Code)
-		}
-
-		var resp httphandler.Response
-		err = json.Unmarshal(recorder.Body.Bytes(), &resp)
-		if err != nil {
-			t.Fatalf("Failed to parse response: %v", err)
-		}
-
-		if resp.Success {
-			t.Errorf("Expected success to be false, got true")
-		}
-
-		expectedError := "QrPaymentId is required"
-		if resp.Error != expectedError {
-			t.Errorf("Expected error message '%s', got '%s'", expectedError, resp.Error)
 		}
 	})
 

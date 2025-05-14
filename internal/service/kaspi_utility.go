@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"log/slog"
 	"net/http"
 )
@@ -34,6 +35,12 @@ func (s *KaspiService) TestScanQR(ctx context.Context, req domain.TestScanReques
 		slog.String("op", op),
 		slog.String("qrPaymentId", req.QrPaymentID),
 	)
+
+	if err := validator.ValidateTestScanRequest(req); err != nil {
+		log.Warn("invalid test scan qr request", "error", err.Error())
+		return err
+	}
+
 	log.Debug("simulating QR code scan")
 
 	path := "/test/payment/scan"
@@ -55,6 +62,12 @@ func (s *KaspiService) TestConfirmPayment(ctx context.Context, req domain.TestCo
 		slog.String("op", op),
 		slog.String("qrPaymentId", req.QrPaymentID),
 	)
+
+	if err := validator.ValidateTestConfirmRequest(req); err != nil {
+		log.Warn("invalid test confirm request", "error", err.Error())
+		return err
+	}
+
 	log.Debug("simulating payment confirmation")
 
 	path := "/test/payment/confirm"
@@ -76,6 +89,12 @@ func (s *KaspiService) TestScanError(ctx context.Context, req domain.TestScanErr
 		slog.String("op", op),
 		slog.String("qrPaymentId", req.QrPaymentID),
 	)
+
+	if err := validator.ValidateTestScanErrorRequest(req); err != nil {
+		log.Warn("invalid test scan error request", "error", err.Error())
+		return err
+	}
+
 	log.Debug("simulating QR code scan error")
 
 	path := "/test/payment/scanerror"
@@ -97,6 +116,12 @@ func (s *KaspiService) TestConfirmError(ctx context.Context, req domain.TestConf
 		slog.String("op", op),
 		slog.String("qrPaymentId", req.QrPaymentID),
 	)
+
+	if err := validator.ValidateTestConfirmErrorRequest(req); err != nil {
+		log.Warn("invalid test confirm error request", "error", err.Error())
+		return err
+	}
+
 	log.Debug("simulating payment confirmation error")
 
 	path := "/test/payment/confirmerror"

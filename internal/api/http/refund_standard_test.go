@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -23,7 +24,28 @@ type MockRefundProvider struct {
 }
 
 func (m *MockRefundProvider) CreateRefundQR(ctx context.Context, req domain.QRRefundCreateRequest) (*domain.QRRefundCreateResponse, error) {
-	return m.CreateRefundQRFunc(ctx, req)
+	if m.CreateRefundQRFunc != nil {
+		return m.CreateRefundQRFunc(ctx, req)
+	}
+
+	if req.DeviceToken == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	expireDate := time.Now().Add(5 * time.Minute)
+	return &domain.QRRefundCreateResponse{
+		QrToken:    "51236903777280167836178166503744993984459",
+		ExpireDate: expireDate,
+		QrReturnID: 15,
+		QrRefundBehaviorOptions: domain.QRRefundBehaviorOptions{
+			QrCodeScanEventPollingInterval: 5,
+			QrCodeScanWaitTimeout:          180,
+		},
+	}, nil
 }
 
 func (m *MockRefundProvider) GetRefundStatus(ctx context.Context, qrReturnID int64) (*domain.RefundStatusResponse, error) {
@@ -35,11 +57,74 @@ func (m *MockRefundProvider) GetCustomerOperations(ctx context.Context, req doma
 }
 
 func (m *MockRefundProvider) GetPaymentDetails(ctx context.Context, qrPaymentID int64, deviceToken string) (*domain.PaymentDetailsResponse, error) {
-	return m.GetPaymentDetailsFunc(ctx, qrPaymentID, deviceToken)
+	if m.GetPaymentDetailsFunc != nil {
+		return m.GetPaymentDetailsFunc(ctx, qrPaymentID, deviceToken)
+	}
+
+	if qrPaymentID <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "qrPaymentId",
+			Message: "QR payment ID must be a positive number",
+			Err:     validator.ErrInvalidID,
+		}
+	}
+
+	if deviceToken == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	return &domain.PaymentDetailsResponse{
+		QrPaymentID:           qrPaymentID,
+		TotalAmount:           11.00,
+		AvailableReturnAmount: 11.00,
+		TransactionDate:       time.Now().Add(-24 * time.Hour),
+	}, nil
 }
 
 func (m *MockRefundProvider) RefundPayment(ctx context.Context, req domain.RefundRequest) (*domain.RefundResponse, error) {
-	return m.RefundPaymentFunc(ctx, req)
+	if m.RefundPaymentFunc != nil {
+		return m.RefundPaymentFunc(ctx, req)
+	}
+
+	if req.DeviceToken == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	if req.QrPaymentID <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "qrPaymentId",
+			Message: "QR payment ID must be a positive number",
+			Err:     validator.ErrInvalidID,
+		}
+	}
+
+	if req.QrReturnID <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "qrReturnId",
+			Message: "QR return ID must be a positive number",
+			Err:     validator.ErrInvalidID,
+		}
+	}
+
+	if req.Amount <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "amount",
+			Message: "amount must be greater than zero",
+			Err:     validator.ErrInvalidAmount,
+		}
+	}
+
+	return &domain.RefundResponse{
+		ReturnOperationID: 15,
+	}, nil
 }
 
 func TestCreateRefundQRHandler(t *testing.T) {

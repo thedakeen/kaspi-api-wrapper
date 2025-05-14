@@ -6,6 +6,7 @@ import (
 	"fmt"
 	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -170,14 +171,25 @@ func TestRegisterDeviceEnhancedHandler(t *testing.T) {
 	})
 
 	t.Run("rejects missing OrganizationBin", func(t *testing.T) {
-		mockProvider := &MockDeviceEnhancedProvider{}
+		mockProvider := &MockDeviceEnhancedProvider{
+			RegisterDeviceEnhancedFunc: func(ctx context.Context, req domain.EnhancedDeviceRegisterRequest) (*domain.DeviceRegisterResponse, error) {
+				if req.OrganizationBin == "" {
+					return nil, &validator.ValidationError{
+						Field:   "organizationBin",
+						Message: "organization BIN is required",
+						Err:     validator.ErrRequiredField,
+					}
+				}
+				return &domain.DeviceRegisterResponse{DeviceToken: "test-token"}, nil
+			},
+		}
 
 		h := httphandler.NewHandlers(log, nil, nil, nil, nil, mockProvider, nil, nil)
 
 		reqBody := `{
-			"DeviceId": "TEST-DEVICE",
-			"TradePointId": 1
-		}`
+        "DeviceId": "TEST-DEVICE",
+        "TradePointId": 1
+    }`
 		req, err := http.NewRequest("POST", "/api/device/register/enhanced", strings.NewReader(reqBody))
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
@@ -259,13 +271,24 @@ func TestDeleteDeviceEnhancedHandler(t *testing.T) {
 	})
 
 	t.Run("rejects missing DeviceToken", func(t *testing.T) {
-		mockProvider := &MockDeviceEnhancedProvider{}
+		mockProvider := &MockDeviceEnhancedProvider{
+			DeleteDeviceEnhancedFunc: func(ctx context.Context, req domain.EnhancedDeviceDeleteRequest) error {
+				if req.DeviceToken == "" {
+					return &validator.ValidationError{
+						Field:   "deviceToken",
+						Message: "device token is required",
+						Err:     validator.ErrRequiredField,
+					}
+				}
+				return nil
+			},
+		}
 
 		h := httphandler.NewHandlers(log, nil, nil, nil, nil, mockProvider, nil, nil)
 
 		reqBody := `{
-			"OrganizationBin": "180340021791"
-		}`
+            "OrganizationBin": "180340021791"
+        }`
 		req, err := http.NewRequest("POST", "/api/device/delete/enhanced", strings.NewReader(reqBody))
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)

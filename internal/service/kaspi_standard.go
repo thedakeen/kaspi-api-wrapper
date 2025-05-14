@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"log/slog"
 	"net/http"
 )
@@ -22,6 +23,11 @@ func (s *KaspiService) CreateRefundQR(ctx context.Context, req domain.QRRefundCr
 		slog.String("op", op),
 		slog.String("deviceToken", req.DeviceToken),
 	)
+
+	if err := validator.ValidateQRRefundCreateRequest(req); err != nil {
+		log.Warn("invalid refund QR create request", "error", err.Error())
+		return nil, err
+	}
 
 	log.Debug("creating QR token for refund")
 
@@ -50,6 +56,14 @@ func (s *KaspiService) GetRefundStatus(ctx context.Context, qrReturnID int64) (*
 		slog.String("op", op),
 		slog.Int64("qrReturnID", qrReturnID),
 	)
+
+	if qrReturnID <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "qrReturnId",
+			Message: "Invalid refund ID format",
+			Err:     validator.ErrInvalidID,
+		}
+	}
 
 	log.Debug("getting refund status")
 
@@ -80,6 +94,11 @@ func (s *KaspiService) GetCustomerOperations(ctx context.Context, req domain.Cus
 		slog.Int64("qrReturnID", req.QrReturnID),
 	)
 
+	if err := validator.ValidateCustomerOperationsRequest(req); err != nil {
+		log.Warn("invalid customer operations request", "error", err.Error())
+		return nil, err
+	}
+
 	log.Debug("getting customer operations")
 
 	path := "/return/operations"
@@ -108,6 +127,11 @@ func (s *KaspiService) GetPaymentDetails(ctx context.Context, qrPaymentID int64,
 		slog.Int64("qrPaymentID", qrPaymentID),
 		slog.String("deviceToken", deviceToken),
 	)
+
+	if err := validator.ValidatePaymentDetailsRequest(qrPaymentID, deviceToken); err != nil {
+		log.Warn("invalid payment details request", "error", err.Error())
+		return nil, err
+	}
 
 	log.Debug("getting payment details")
 
@@ -142,6 +166,11 @@ func (s *KaspiService) RefundPayment(ctx context.Context, req domain.RefundReque
 		slog.Int64("qrPaymentID", req.QrPaymentID),
 		slog.Float64("amount", req.Amount),
 	)
+
+	if err := validator.ValidateRefundRequest(req); err != nil {
+		log.Warn("invalid refund request", "error", err.Error())
+		return nil, err
+	}
 
 	log.Debug("initiating payment refund")
 

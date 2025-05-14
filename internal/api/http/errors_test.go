@@ -73,7 +73,7 @@ func TestHandleKaspiError(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
-			httphandler.HandleKaspiError(recorder, tc.err, log)
+			httphandler.HandleError(recorder, tc.err, log)
 
 			if recorder.Code != tc.expectedStatus {
 				t.Errorf("Expected status code %d got %d", tc.expectedStatus, recorder.Code)

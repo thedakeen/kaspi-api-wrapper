@@ -1,13 +1,11 @@
 package validator
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"kaspi-api-wrapper/internal/domain"
-	"net/http"
 )
 
 // Validation errors
@@ -35,28 +33,6 @@ func GRPCError(err error) error {
 		return status.Error(codes.InvalidArgument, valErr.Error())
 	}
 	return status.Error(codes.Internal, "validation error")
-}
-
-// HTTPError handles validation errors in HTTP
-func HTTPError(w http.ResponseWriter, err error) bool {
-	var valErr *ValidationError
-	if errors.As(err, &valErr) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   valErr.Error(),
-		})
-		return true
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusInternalServerError)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": false,
-		"error":   "validation error",
-	})
-	return true
 }
 
 func (e *ValidationError) Error() string {
@@ -334,6 +310,27 @@ func ValidateEnhancedRefundRequest(req domain.EnhancedRefundRequest) error {
 			Field:   "organizationBin",
 			Message: "organization BIN is required",
 			Err:     ErrRequiredField,
+		}
+	}
+
+	return nil
+}
+
+// ValidateClientInfoRequest validates a client info request
+func ValidateClientInfoRequest(phoneNumber string, deviceToken int64) error {
+	if phoneNumber == "" {
+		return &ValidationError{
+			Field:   "phoneNumber",
+			Message: "phoneNumber is required",
+			Err:     ErrRequiredField,
+		}
+	}
+
+	if deviceToken <= 0 {
+		return &ValidationError{
+			Field:   "deviceToken",
+			Message: "deviceToken must be a positive number",
+			Err:     ErrInvalidID,
 		}
 	}
 
