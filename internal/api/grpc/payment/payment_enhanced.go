@@ -5,7 +5,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	paymentv1 "kaspi-api-wrapper/pkg/protos/gen/go/payment"
 )
 
@@ -18,15 +17,11 @@ func (s *serverAPI) CreateQREnhanced(ctx context.Context, req *paymentv1.CreateQ
 		OrganizationBin: req.OrganizationBin,
 	}
 
-	if err := validator.ValidateEnhancedQRCreateRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	result, err := s.paymentEnhancedProvider.CreateQREnhanced(ctx, domainReq)
 	if err != nil {
 		// Log only errors
 		s.log.Error("CreateQREnhanced failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &paymentv1.CreateQRResponse{
@@ -53,14 +48,10 @@ func (s *serverAPI) CreatePaymentLinkEnhanced(ctx context.Context, req *paymentv
 		OrganizationBin: req.OrganizationBin,
 	}
 
-	if err := validator.ValidateEnhancedPaymentLinkCreateRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	result, err := s.paymentEnhancedProvider.CreatePaymentLinkEnhanced(ctx, domainReq)
 	if err != nil {
 		s.log.Error("CreatePaymentLinkEnhanced failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &paymentv1.CreatePaymentLinkResponse{

@@ -6,7 +6,6 @@ import (
 	"kaspi-api-wrapper/internal/api"
 	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	refundenhancedv1 "kaspi-api-wrapper/pkg/protos/gen/go/refund_enhanced"
 	"log/slog"
 	"strconv"
@@ -34,14 +33,10 @@ func (s *serverAPI) RefundPaymentEnhanced(ctx context.Context, req *refundenhanc
 		OrganizationBin: req.OrganizationBin,
 	}
 
-	if err := validator.ValidateEnhancedRefundRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	result, err := s.refundEnhancedProvider.RefundPaymentEnhanced(ctx, domainReq)
 	if err != nil {
 		s.log.Error("RefundPaymentEnhanced failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &refundenhancedv1.RefundPaymentEnhancedResponse{
@@ -53,26 +48,10 @@ func (s *serverAPI) RefundPaymentEnhanced(ctx context.Context, req *refundenhanc
 
 // GetClientInfo implements kaspiv1.EnhancedRefundServiceServer
 func (s *serverAPI) GetClientInfo(ctx context.Context, req *refundenhancedv1.GetClientInfoRequest) (*refundenhancedv1.GetClientInfoResponse, error) {
-	if req.PhoneNumber == "" {
-		return nil, validator.GRPCError(&validator.ValidationError{
-			Field:   "phoneNumber",
-			Message: "phone number is required",
-			Err:     validator.ErrRequiredField,
-		})
-	}
-
-	if req.DeviceToken <= 0 {
-		return nil, validator.GRPCError(&validator.ValidationError{
-			Field:   "deviceToken",
-			Message: "device token must be a positive number",
-			Err:     validator.ErrInvalidToken,
-		})
-	}
-
 	info, err := s.refundEnhancedProvider.GetClientInfo(ctx, req.PhoneNumber, req.DeviceToken)
 	if err != nil {
 		s.log.Error("GetClientInfo failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &refundenhancedv1.GetClientInfoResponse{
@@ -86,11 +65,7 @@ func (s *serverAPI) GetClientInfo(ctx context.Context, req *refundenhancedv1.Get
 func (s *serverAPI) CreateRemotePayment(ctx context.Context, req *refundenhancedv1.CreateRemotePaymentRequest) (*refundenhancedv1.CreateRemotePaymentResponse, error) {
 	deviceToken, err := strconv.ParseInt(req.DeviceToken, 10, 64)
 	if err != nil {
-		return nil, validator.GRPCError(&validator.ValidationError{
-			Field:   "deviceToken",
-			Message: "invalid device token format",
-			Err:     validator.ErrInvalidToken,
-		})
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	domainReq := domain.RemotePaymentRequest{
@@ -101,14 +76,10 @@ func (s *serverAPI) CreateRemotePayment(ctx context.Context, req *refundenhanced
 		Comment:         req.Comment,
 	}
 
-	if err := validator.ValidateRemotePaymentRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	result, err := s.refundEnhancedProvider.CreateRemotePayment(ctx, domainReq)
 	if err != nil {
 		s.log.Error("CreateRemotePayment failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &refundenhancedv1.CreateRemotePaymentResponse{
@@ -126,14 +97,10 @@ func (s *serverAPI) CancelRemotePayment(ctx context.Context, req *refundenhanced
 		DeviceToken:     req.DeviceToken,
 	}
 
-	if err := validator.ValidateRemotePaymentCancelRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	result, err := s.refundEnhancedProvider.CancelRemotePayment(ctx, domainReq)
 	if err != nil {
 		s.log.Error("CancelRemotePayment failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &refundenhancedv1.CancelRemotePaymentResponse{

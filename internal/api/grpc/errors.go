@@ -5,16 +5,28 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"log/slog"
 )
 
-// HandleKaspiError handles Kaspi API errors and maps them to appropriate gRPC responses
-func HandleKaspiError(err error, log *slog.Logger) error {
+// HandleError handles all types of errors and maps them to appropriate HTTP responses
+func HandleError(err error, log *slog.Logger) error {
 	if err != nil && errors.Is(err, domain.ErrUnsupportedFeature) {
 		log.Error("scheme compatibility error", "error", err)
 		return status.Error(codes.PermissionDenied, err.Error())
 	}
 
+	var valErr *validator.ValidationError
+	if errors.As(err, &valErr) {
+		log.Warn("validation error", "error", err.Error())
+		return status.Error(codes.InvalidArgument, valErr.Error())
+	}
+
+	return handleKaspiError(err, log)
+}
+
+// HandleKaspiError handles Kaspi API errors and maps them to appropriate gRPC responses
+func handleKaspiError(err error, log *slog.Logger) error {
 	kaspiErr, ok := domain.IsKaspiError(err)
 	if !ok {
 		log.Error("unexpected error", "error", err)
