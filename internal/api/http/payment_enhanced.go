@@ -2,7 +2,6 @@ package http
 
 import (
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 )
 
@@ -13,16 +12,10 @@ func (h *Handlers) CreateQREnhanced(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validator.ValidateEnhancedQRCreateRequest(req); err != nil {
-		h.log.Warn("invalid enhanced QR create request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	resp, err := h.paymentEnhancedProvider.CreateQREnhanced(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to create QR (enhanced)", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -39,16 +32,10 @@ func (h *Handlers) CreatePaymentLinkEnhanced(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if err := validator.ValidateEnhancedPaymentLinkCreateRequest(req); err != nil {
-		h.log.Warn("invalid enhanced payment link create request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	resp, err := h.paymentEnhancedProvider.CreatePaymentLinkEnhanced(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to create payment link (enhanced)", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 

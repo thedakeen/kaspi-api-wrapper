@@ -6,7 +6,6 @@ import (
 	"kaspi-api-wrapper/internal/api"
 	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	utilityv1 "kaspi-api-wrapper/pkg/protos/gen/go/utility"
 	"log/slog"
 )
@@ -29,7 +28,7 @@ func (s *serverAPI) HealthCheck(ctx context.Context, req *utilityv1.HealthCheckR
 	err := s.utilityProvider.HealthCheck(ctx)
 	if err != nil {
 		s.log.Error("HealthCheck failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	return &utilityv1.HealthCheckResponse{
@@ -43,14 +42,10 @@ func (s *serverAPI) TestScanQR(ctx context.Context, req *utilityv1.TestScanQRReq
 		QrPaymentID: req.QrPaymentId,
 	}
 
-	if err := validator.ValidateTestScanRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	err := s.utilityProvider.TestScanQR(ctx, domainReq)
 	if err != nil {
 		s.log.Error("TestScanQR failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	return &utilityv1.TestScanQRResponse{
@@ -64,14 +59,10 @@ func (s *serverAPI) TestConfirmPayment(ctx context.Context, req *utilityv1.TestC
 		QrPaymentID: req.QrPaymentId,
 	}
 
-	if err := validator.ValidateTestConfirmRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	err := s.utilityProvider.TestConfirmPayment(ctx, domainReq)
 	if err != nil {
 		s.log.Error("TestConfirmPayment failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	return &utilityv1.TestConfirmPaymentResponse{
@@ -85,14 +76,10 @@ func (s *serverAPI) TestScanError(ctx context.Context, req *utilityv1.TestScanEr
 		QrPaymentID: req.QrPaymentId,
 	}
 
-	if err := validator.ValidateTestScanErrorRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	err := s.utilityProvider.TestScanError(ctx, domainReq)
 	if err != nil {
 		s.log.Error("TestScanError failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	return &utilityv1.TestScanErrorResponse{
@@ -106,14 +93,10 @@ func (s *serverAPI) TestConfirmError(ctx context.Context, req *utilityv1.TestCon
 		QrPaymentID: req.QrPaymentId,
 	}
 
-	if err := validator.ValidateTestConfirmErrorRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	err := s.utilityProvider.TestConfirmError(ctx, domainReq)
 	if err != nil {
 		s.log.Error("TestConfirmError failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	return &utilityv1.TestConfirmErrorResponse{

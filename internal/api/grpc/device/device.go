@@ -6,7 +6,6 @@ import (
 	"kaspi-api-wrapper/internal/api"
 	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	devicev1 "kaspi-api-wrapper/pkg/protos/gen/go/device"
 	"log/slog"
 )
@@ -35,7 +34,7 @@ func (s *serverAPI) GetTradePoints(ctx context.Context, req *devicev1.GetTradePo
 	tradePoints, err := s.deviceProvider.GetTradePoints(ctx)
 	if err != nil {
 		log.Error("GetTradePoints failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, log)
+		return nil, grpchandler.HandleError(err, log)
 	}
 
 	resp := &devicev1.GetTradePointsResponse{
@@ -65,14 +64,10 @@ func (s *serverAPI) RegisterDevice(ctx context.Context, req *devicev1.RegisterDe
 		TradePointID: req.TradepointId,
 	}
 
-	if err := validator.ValidateDeviceRegisterRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	result, err := s.deviceProvider.RegisterDevice(ctx, domainReq)
 	if err != nil {
 		log.Error("failed to register device", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, log)
+		return nil, grpchandler.HandleError(err, log)
 	}
 
 	return &devicev1.RegisterDeviceResponse{
@@ -86,15 +81,11 @@ func (s *serverAPI) DeleteDevice(ctx context.Context, req *devicev1.DeleteDevice
 		slog.String("method", "DeleteDevice"),
 		slog.String("deviceToken", req.DeviceToken),
 	)
-
-	if err := validator.ValidateDeviceToken(req.DeviceToken); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
+	
 	err := s.deviceProvider.DeleteDevice(ctx, req.DeviceToken)
 	if err != nil {
 		log.Error("failed to delete device", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, log)
+		return nil, grpchandler.HandleError(err, log)
 	}
 
 	return &devicev1.DeleteDeviceResponse{}, nil

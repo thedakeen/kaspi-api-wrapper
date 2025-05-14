@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,11 +22,46 @@ func (m *MockDeviceProvider) GetTradePoints(ctx context.Context) ([]domain.Trade
 }
 
 func (m *MockDeviceProvider) RegisterDevice(ctx context.Context, req domain.DeviceRegisterRequest) (*domain.DeviceRegisterResponse, error) {
-	return m.RegisterDeviceFunc(ctx, req)
+	if m.RegisterDeviceFunc != nil {
+		return m.RegisterDeviceFunc(ctx, req)
+	}
+
+	if req.DeviceID == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceId",
+			Message: "device ID is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	if req.TradePointID <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "tradePointId",
+			Message: "trade point ID must be a positive number",
+			Err:     validator.ErrInvalidID,
+		}
+	}
+
+	return &domain.DeviceRegisterResponse{
+		DeviceToken: "test-device-token",
+	}, nil
 }
 
 func (m *MockDeviceProvider) DeleteDevice(ctx context.Context, deviceToken string) error {
-	return m.DeleteDeviceFunc(ctx, deviceToken)
+	if m.DeleteDeviceFunc != nil {
+		return m.DeleteDeviceFunc(ctx, deviceToken)
+	}
+
+	// Default implementation with validation
+	if deviceToken == "" {
+		return &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	return nil
 }
 
 func TestGetTradePoints(t *testing.T) {

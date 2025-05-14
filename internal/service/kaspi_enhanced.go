@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"kaspi-api-wrapper/internal/domain"
 	"kaspi-api-wrapper/internal/storage"
+	"kaspi-api-wrapper/internal/validator"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -40,6 +41,14 @@ func (s *KaspiService) GetTradePointsEnhanced(ctx context.Context, organizationB
 		slog.String("organizationBin", organizationBin),
 	)
 
+	if organizationBin == "" {
+		return nil, &validator.ValidationError{
+			Field:   "OrganizationBin",
+			Message: "OrganizationBin is required",
+			Err:     validator.ErrInvalidID,
+		}
+	}
+
 	log.Debug("getting trade points (enhanced)")
 
 	path := fmt.Sprintf("/partner/tradepoints/%s", organizationBin)
@@ -65,6 +74,11 @@ func (s *KaspiService) RegisterDeviceEnhanced(ctx context.Context, req domain.En
 		slog.Int64("tradePointID", req.TradePointID),
 		slog.String("organizationBin", req.OrganizationBin),
 	)
+
+	if err := validator.ValidateEnhancedDeviceRegisterRequest(req); err != nil {
+		log.Warn("invalid enhanced device register request", "error", err.Error())
+		return nil, err
+	}
 
 	log.Debug("registering device (enhanced)")
 
@@ -110,6 +124,11 @@ func (s *KaspiService) DeleteDeviceEnhanced(ctx context.Context, req domain.Enha
 		slog.String("organizationBin", req.OrganizationBin),
 	)
 
+	if err := validator.ValidateEnhancedDeviceDeleteRequest(req); err != nil {
+		log.Warn("invalid enhanced device delete request", "error", err.Error())
+		return err
+	}
+
 	log.Debug("deleting device (enhanced)")
 
 	path := "/device/delete"
@@ -139,6 +158,11 @@ func (s *KaspiService) CreateQREnhanced(ctx context.Context, req domain.Enhanced
 		slog.String("organizationBin", req.OrganizationBin),
 	)
 
+	if err := validator.ValidateEnhancedQRCreateRequest(req); err != nil {
+		log.Warn("invalid enhanced QR create request", "error", err.Error())
+		return nil, err
+	}
+
 	log.Debug("creating QR (enhanced)")
 
 	path := "/qr/create"
@@ -164,6 +188,11 @@ func (s *KaspiService) CreatePaymentLinkEnhanced(ctx context.Context, req domain
 		slog.Float64("amount", req.Amount),
 		slog.String("organizationBin", req.OrganizationBin),
 	)
+
+	if err := validator.ValidateEnhancedPaymentLinkCreateRequest(req); err != nil {
+		log.Warn("invalid enhanced payment link create request", "error", err.Error())
+		return nil, err
+	}
 
 	log.Debug("creating payment link (enhanced)")
 
@@ -195,6 +224,11 @@ func (s *KaspiService) RefundPaymentEnhanced(ctx context.Context, req domain.Enh
 		slog.Float64("amount", req.Amount),
 	)
 
+	if err := validator.ValidateEnhancedRefundRequest(req); err != nil {
+		log.Warn("invalid enhanced refund request", "error", err.Error())
+		return nil, err
+	}
+
 	log.Debug("initiating payment refund (enhanced)")
 
 	path := "/payment/return"
@@ -218,6 +252,11 @@ func (s *KaspiService) GetClientInfo(ctx context.Context, phoneNumber string, de
 		slog.String("op", op),
 		slog.Int64("deviceToken", deviceToken),
 	)
+
+	if err := validator.ValidateClientInfoRequest(phoneNumber, deviceToken); err != nil {
+		log.Warn("invalid client info request", "error", err.Error())
+		return nil, err
+	}
 
 	log.Debug("getting client information by phone number")
 
@@ -249,6 +288,11 @@ func (s *KaspiService) CreateRemotePayment(ctx context.Context, req domain.Remot
 		slog.Float64("amount", req.Amount),
 	)
 
+	if err := validator.ValidateRemotePaymentRequest(req); err != nil {
+		log.Warn("invalid remote payment request", "error", err.Error())
+		return nil, err
+	}
+
 	log.Debug("creating remote payment request")
 
 	path := "/remote/create"
@@ -277,6 +321,11 @@ func (s *KaspiService) CancelRemotePayment(ctx context.Context, req domain.Remot
 		slog.Int64("deviceToken", req.DeviceToken),
 		slog.Int64("qrPaymentID", req.QrPaymentID),
 	)
+
+	if err := validator.ValidateRemotePaymentCancelRequest(req); err != nil {
+		log.Warn("invalid cancel remote payment request", "error", err.Error())
+		return nil, err
+	}
 
 	log.Debug("canceling remote payment request")
 

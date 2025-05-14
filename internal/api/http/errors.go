@@ -3,17 +3,31 @@ package http
 import (
 	"errors"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"log/slog"
 	"net/http"
 )
 
-// HandleKaspiError handles Kaspi API errors and maps them to appropriate HTTP responses
-func HandleKaspiError(w http.ResponseWriter, err error, log *slog.Logger) {
+// HandleError handles all types of errors and maps them to appropriate HTTP responses
+func HandleError(w http.ResponseWriter, err error, log *slog.Logger) {
 	if err != nil && errors.Is(err, domain.ErrUnsupportedFeature) {
 		log.Error("scheme compatibility error", "error", err)
 		ForbiddenError(w, err.Error())
 		return
 	}
+
+	var valErr *validator.ValidationError
+	if errors.As(err, &valErr) {
+		log.Warn("validation error", "error", err.Error())
+		BadRequestError(w, valErr.Error())
+		return
+	}
+
+	handleKaspiError(w, err, log)
+}
+
+// handleKaspiError handles Kaspi API errors and maps them to appropriate HTTP responses
+func handleKaspiError(w http.ResponseWriter, err error, log *slog.Logger) {
 	kaspiErr, ok := domain.IsKaspiError(err)
 	if !ok {
 		log.Error("unexpected error", "error", err)

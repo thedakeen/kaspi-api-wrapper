@@ -6,6 +6,7 @@ import (
 	"fmt"
 	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -19,11 +20,85 @@ type MockPaymentEnhancedProvider struct {
 }
 
 func (m *MockPaymentEnhancedProvider) CreateQREnhanced(ctx context.Context, req domain.EnhancedQRCreateRequest) (*domain.QRCreateResponse, error) {
-	return m.CreateQREnhancedFunc(ctx, req)
+	if m.CreateQREnhancedFunc != nil {
+		return m.CreateQREnhancedFunc(ctx, req)
+	}
+
+	if req.DeviceToken == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	if req.Amount <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "amount",
+			Message: "amount must be greater than zero",
+			Err:     validator.ErrInvalidAmount,
+		}
+	}
+
+	if req.OrganizationBin == "" {
+		return nil, &validator.ValidationError{
+			Field:   "organizationBin",
+			Message: "organization BIN is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	return &domain.QRCreateResponse{
+		QrToken:        "test-qr-token",
+		QrPaymentID:    123,
+		PaymentMethods: []string{"Gold", "Red", "Loan"},
+		QrPaymentBehaviorOptions: domain.QRPaymentBehaviorOptions{
+			StatusPollingInterval:      5,
+			QrCodeScanWaitTimeout:      180,
+			PaymentConfirmationTimeout: 65,
+		},
+	}, nil
 }
 
 func (m *MockPaymentEnhancedProvider) CreatePaymentLinkEnhanced(ctx context.Context, req domain.EnhancedPaymentLinkCreateRequest) (*domain.PaymentLinkCreateResponse, error) {
-	return m.CreatePaymentLinkEnhancedFunc(ctx, req)
+	if m.CreatePaymentLinkEnhancedFunc != nil {
+		return m.CreatePaymentLinkEnhancedFunc(ctx, req)
+	}
+
+	if req.DeviceToken == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	if req.Amount <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "amount",
+			Message: "amount must be greater than zero",
+			Err:     validator.ErrInvalidAmount,
+		}
+	}
+
+	if req.OrganizationBin == "" {
+		return nil, &validator.ValidationError{
+			Field:   "organizationBin",
+			Message: "organization BIN is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	return &domain.PaymentLinkCreateResponse{
+		PaymentLink:    "https://pay.kaspi.kz/pay/test-payment-link",
+		PaymentID:      123,
+		PaymentMethods: []string{"Gold", "Red", "Loan"},
+		PaymentBehaviorOptions: domain.PaymentBehaviorOptions{
+			StatusPollingInterval:      5,
+			LinkActivationWaitTimeout:  180,
+			PaymentConfirmationTimeout: 65,
+		},
+	}, nil
 }
 
 func TestCreateQREnhancedHandler(t *testing.T) {

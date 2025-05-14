@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,11 +21,65 @@ type MockPaymentProvider struct {
 }
 
 func (m *MockPaymentProvider) CreateQR(ctx context.Context, req domain.QRCreateRequest) (*domain.QRCreateResponse, error) {
-	return m.CreateQRFunc(ctx, req)
+	if m.CreateQRFunc != nil {
+		return m.CreateQRFunc(ctx, req)
+	}
+
+	if req.DeviceToken == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	if req.Amount <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "amount",
+			Message: "amount must be greater than zero",
+			Err:     validator.ErrInvalidAmount,
+		}
+	}
+
+	return &domain.QRCreateResponse{
+		QrToken:     "test-qr-token",
+		QrPaymentID: 123,
+	}, nil
 }
 
 func (m *MockPaymentProvider) CreatePaymentLink(ctx context.Context, req domain.PaymentLinkCreateRequest) (*domain.PaymentLinkCreateResponse, error) {
-	return m.CreatePaymentLinkFunc(ctx, req)
+	if m.CreatePaymentLinkFunc != nil {
+		return m.CreatePaymentLinkFunc(ctx, req)
+	}
+
+	if req.DeviceToken == "" {
+		return nil, &validator.ValidationError{
+			Field:   "deviceToken",
+			Message: "device token is required",
+			Err:     validator.ErrRequiredField,
+		}
+	}
+
+	if req.Amount <= 0 {
+		return nil, &validator.ValidationError{
+			Field:   "amount",
+			Message: "amount must be greater than zero",
+			Err:     validator.ErrInvalidAmount,
+		}
+	}
+
+	expireDate := time.Now().Add(5 * time.Minute)
+	return &domain.PaymentLinkCreateResponse{
+		PaymentLink:    "https://pay.kaspi.kz/pay/123456789",
+		ExpireDate:     expireDate,
+		PaymentID:      15,
+		PaymentMethods: []string{"Gold", "Red", "Loan"},
+		PaymentBehaviorOptions: domain.PaymentBehaviorOptions{
+			StatusPollingInterval:      5,
+			LinkActivationWaitTimeout:  180,
+			PaymentConfirmationTimeout: 65,
+		},
+	}, nil
 }
 
 func (m *MockPaymentProvider) GetPaymentStatus(ctx context.Context, qrPaymentID int64) (*domain.PaymentStatusResponse, error) {

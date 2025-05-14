@@ -3,7 +3,6 @@ package http
 import (
 	"github.com/go-chi/chi/v5"
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"strconv"
 )
@@ -15,16 +14,10 @@ func (h *Handlers) CreateQR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validator.ValidateQRCreateRequest(req); err != nil {
-		h.log.Warn("invalid QR create request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	resp, err := h.paymentProvider.CreateQR(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to create QR token", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -41,16 +34,10 @@ func (h *Handlers) CreatePaymentLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validator.ValidatePaymentLinkCreateRequest(req); err != nil {
-		h.log.Warn("invalid payment link create request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	resp, err := h.paymentProvider.CreatePaymentLink(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to create payment link", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -64,15 +51,11 @@ func (h *Handlers) CreatePaymentLink(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) GetPaymentStatus(w http.ResponseWriter, r *http.Request) {
 	qrPaymentIDStr := chi.URLParam(r, "qrPaymentId")
 	qrPaymentID, err := strconv.ParseInt(qrPaymentIDStr, 10, 64)
-	if err != nil {
-		BadRequestError(w, "Invalid payment ID format")
-		return
-	}
 
 	status, err := h.paymentProvider.GetPaymentStatus(r.Context(), qrPaymentID)
 	if err != nil {
 		h.log.Error("failed to get payment status", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 

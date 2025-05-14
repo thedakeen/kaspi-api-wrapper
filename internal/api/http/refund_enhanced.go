@@ -2,7 +2,6 @@ package http
 
 import (
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"strconv"
 )
@@ -14,16 +13,10 @@ func (h *Handlers) RefundPaymentEnhanced(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := validator.ValidateEnhancedRefundRequest(req); err != nil {
-		h.log.Warn("invalid enhanced refund request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	resp, err := h.refundEnhancedProvider.RefundPaymentEnhanced(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to refund payment (enhanced)", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -44,20 +37,10 @@ func (h *Handlers) GetClientInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if phoneNumber == "" {
-		BadRequestError(w, "phoneNumber is required")
-		return
-	}
-
-	if deviceToken == "" {
-		BadRequestError(w, "deviceToken is required")
-		return
-	}
-
 	info, err := h.refundEnhancedProvider.GetClientInfo(r.Context(), phoneNumber, deviceTokenInt64)
 	if err != nil {
 		h.log.Error("failed to get client info", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -74,16 +57,10 @@ func (h *Handlers) CreateRemotePayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validator.ValidateRemotePaymentRequest(req); err != nil {
-		h.log.Warn("invalid remote payment request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	resp, err := h.refundEnhancedProvider.CreateRemotePayment(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to create remote payment", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 	respondJSON(w, http.StatusOK, Response{
@@ -99,25 +76,10 @@ func (h *Handlers) CancelRemotePayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.DeviceToken == 0 {
-		BadRequestError(w, "DeviceToken is required")
-		return
-	}
-
-	if req.QrPaymentID == 0 {
-		BadRequestError(w, "QrPaymentId is required")
-		return
-	}
-
-	if req.OrganizationBin == "" {
-		BadRequestError(w, "OrganizationBin is required")
-		return
-	}
-
 	resp, err := h.refundEnhancedProvider.CancelRemotePayment(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to cancel remote payment", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 

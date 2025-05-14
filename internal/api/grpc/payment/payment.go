@@ -7,7 +7,6 @@ import (
 	"kaspi-api-wrapper/internal/api"
 	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	paymentv1 "kaspi-api-wrapper/pkg/protos/gen/go/payment"
 	"log/slog"
 )
@@ -35,14 +34,10 @@ func (s *serverAPI) CreateQR(ctx context.Context, req *paymentv1.CreateQRRequest
 		ExternalID:  req.ExternalId,
 	}
 
-	if err := validator.ValidateQRCreateRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	result, err := s.paymentProvider.CreateQR(ctx, domainReq)
 	if err != nil {
 		s.log.Error("CreateQR failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &paymentv1.CreateQRResponse{
@@ -68,14 +63,10 @@ func (s *serverAPI) CreatePaymentLink(ctx context.Context, req *paymentv1.Create
 		ExternalID:  req.ExternalId,
 	}
 
-	if err := validator.ValidatePaymentLinkCreateRequest(domainReq); err != nil {
-		return nil, validator.GRPCError(err)
-	}
-
 	result, err := s.paymentProvider.CreatePaymentLink(ctx, domainReq)
 	if err != nil {
 		s.log.Error("CreatePaymentLink failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &paymentv1.CreatePaymentLinkResponse{
@@ -95,18 +86,10 @@ func (s *serverAPI) CreatePaymentLink(ctx context.Context, req *paymentv1.Create
 
 // GetPaymentStatus implements kaspiv1.PaymentServiceServer
 func (s *serverAPI) GetPaymentStatus(ctx context.Context, req *paymentv1.GetPaymentStatusRequest) (*paymentv1.GetPaymentStatusResponse, error) {
-	if req.QrPaymentId <= 0 {
-		return nil, validator.GRPCError(&validator.ValidationError{
-			Field:   "qrPaymentId",
-			Message: "payment ID must be a positive number",
-			Err:     validator.ErrInvalidID,
-		})
-	}
-
 	result, err := s.paymentProvider.GetPaymentStatus(ctx, req.QrPaymentId)
 	if err != nil {
 		s.log.Error("GetPaymentStatus failed", "error", err.Error())
-		return nil, grpchandler.HandleKaspiError(err, s.log)
+		return nil, grpchandler.HandleError(err, s.log)
 	}
 
 	resp := &paymentv1.GetPaymentStatusResponse{

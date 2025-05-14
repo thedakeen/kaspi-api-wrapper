@@ -2,7 +2,6 @@ package http
 
 import (
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 )
 
@@ -11,7 +10,7 @@ func (h *Handlers) GetTradePoints(w http.ResponseWriter, r *http.Request) {
 	tradePoints, err := h.deviceProvider.GetTradePoints(r.Context())
 	if err != nil {
 		h.log.Error("failed to get trade points", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -28,16 +27,10 @@ func (h *Handlers) RegisterDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validator.ValidateDeviceRegisterRequest(req); err != nil {
-		h.log.Warn("invalid device register request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	resp, err := h.deviceProvider.RegisterDevice(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to register device", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -57,16 +50,10 @@ func (h *Handlers) DeleteDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validator.ValidateDeviceToken(req.DeviceToken); err != nil {
-		h.log.Warn("invalid device token", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	err := h.deviceProvider.DeleteDevice(r.Context(), req.DeviceToken)
 	if err != nil {
 		h.log.Error("failed to delete device", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 

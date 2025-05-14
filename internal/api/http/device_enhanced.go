@@ -3,7 +3,6 @@ package http
 import (
 	"github.com/go-chi/chi/v5"
 	"kaspi-api-wrapper/internal/domain"
-	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 )
 
@@ -11,15 +10,10 @@ import (
 func (h *Handlers) GetTradePointsEnhanced(w http.ResponseWriter, r *http.Request) {
 	organizationBin := chi.URLParam(r, "organizationBin")
 
-	if organizationBin == "" {
-		BadRequestError(w, "OrganizationBin is required")
-		return
-	}
-
 	tradePoints, err := h.deviceEnhancedProvider.GetTradePointsEnhanced(r.Context(), organizationBin)
 	if err != nil {
 		h.log.Error("failed to get trade points (enhanced)", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -36,16 +30,10 @@ func (h *Handlers) RegisterDeviceEnhanced(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := validator.ValidateEnhancedDeviceRegisterRequest(req); err != nil {
-		h.log.Warn("invalid enhanced device register request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	resp, err := h.deviceEnhancedProvider.RegisterDeviceEnhanced(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to register device (enhanced)", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
@@ -62,16 +50,10 @@ func (h *Handlers) DeleteDeviceEnhanced(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if err := validator.ValidateEnhancedDeviceDeleteRequest(req); err != nil {
-		h.log.Warn("invalid enhanced device delete request", "error", err.Error())
-		validator.HTTPError(w, err)
-		return
-	}
-
 	err := h.deviceEnhancedProvider.DeleteDeviceEnhanced(r.Context(), req)
 	if err != nil {
 		h.log.Error("failed to delete device (enhanced)", "error", err.Error())
-		HandleKaspiError(w, err, h.log)
+		HandleError(w, err, h.log)
 		return
 	}
 
