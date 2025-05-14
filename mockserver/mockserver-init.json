@@ -1,0 +1,47 @@
+[
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r1/v01/partner/tradepoints",
+      "headers": {
+        "Api-Key": "test_api_key"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": [
+          { "TradePointId": 1, "TradePointName": "Магазин 1 (Ауэзова, 65)" },
+          { "TradePointId": 2, "TradePointName": "Магазин 2 (Жарокова, 48)" }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/device/register",
+      "headers": {
+        "Api-Key": "test_api_key"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "DeviceToken": "2be4cc91-5895-48f8-8bc2-86c7bd419b3b"
+        }
+      }
+    }
+  }
+]

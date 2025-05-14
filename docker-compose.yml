@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+
+  mock-kaspi-api:
+    image: mockserver/mockserver:latest
+    container_name: mock-kaspi-api
+    ports:
+      - "8080:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /mockserver-init.json
+      MOCKSERVER_WATCH_INITIALIZATION_JSON: "true"
+    volumes:
+      - ./mockserver/mockserver-init.json:/mockserver-init.json
+    networks:
+      - kaspi-network
+
+
   api:
     build:
       context: .
@@ -21,6 +36,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_NAME=${DB_NAME:-kaspi_pay}
       - DB_SSL_MODE=${DB_SSL_MODE:-disable}
+    networks:
+      - kaspi-network
 
 
   db:
@@ -34,8 +51,10 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
       - POSTGRES_DB=${DB_NAME:-kaspi_pay}
     ports:
-      - "5433:5432"
+      - "5432:5432"
     restart: unless-stopped
+    networks:
+      - kaspi-network
 
   db-tools:
     image: postgres:16-alpine
@@ -54,5 +73,12 @@ services:
       - db
     profiles:
       - tools
+    networks:
+      - kaspi-network
+
+networks:
+  kaspi-network:
+    driver: bridge
+
 volumes:
   postgres_data:
