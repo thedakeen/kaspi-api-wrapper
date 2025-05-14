@@ -3,9 +3,9 @@ package utility
 import (
 	"context"
 	"google.golang.org/grpc"
-	"kaspi-api-wrapper/internal/api"
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/handlers"
+	grpchandler "kaspi-api-wrapper/internal/handlers/grpc"
 	utilityv1 "kaspi-api-wrapper/pkg/protos/gen/go/utility"
 	"log/slog"
 )
@@ -13,10 +13,10 @@ import (
 type serverAPI struct {
 	utilityv1.UnimplementedUtilityServiceServer
 	log             *slog.Logger
-	utilityProvider api.UtilityProvider
+	utilityProvider handlers.UtilityProvider
 }
 
-func Register(gRPC *grpc.Server, log *slog.Logger, utilityProvider api.UtilityProvider) {
+func Register(gRPC *grpc.Server, log *slog.Logger, utilityProvider handlers.UtilityProvider) {
 	utilityv1.RegisterUtilityServiceServer(gRPC, &serverAPI{
 		log:             log,
 		utilityProvider: utilityProvider,

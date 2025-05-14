@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	httphandler "kaspi-api-wrapper/internal/handlers/http"
 	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
@@ -53,7 +53,7 @@ func TestGetTradePointsEnhancedHandler(t *testing.T) {
 		h := httphandler.NewHandlers(log, nil, nil, nil, nil, mockProvider, nil, nil)
 
 		r := chi.NewRouter()
-		r.Get("/api/tradepoints/enhanced/{organizationBin}", h.GetTradePointsEnhanced)
+		r.Get("/handlers/tradepoints/enhanced/{organizationBin}", h.GetTradePointsEnhanced)
 
 		req, err := http.NewRequest("GET", "/api/tradepoints/enhanced/180340021791", nil)
 		if err != nil {

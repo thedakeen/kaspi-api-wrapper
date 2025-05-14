@@ -42,7 +42,7 @@ func setupTestService(log *slog.Logger, scheme string) (*service.KaspiService, *
 		"https://test.com",
 		"https://test.com",
 		"https://test.com",
-		"test-api-key",
+		"test-handlers-key",
 		mockSaver,
 	)
 
@@ -136,8 +136,8 @@ func TestRequest(t *testing.T) {
 				t.Error("Expected X-Request-ID header to be set")
 			}
 
-			if req.Header.Get("Api-Key") != "test-api-key" {
-				t.Errorf("Expected Api-Key header test-api-key, got %s",
+			if req.Header.Get("Api-Key") != "test-handlers-key" {
+				t.Errorf("Expected Api-Key header test-handlers-key, got %s",
 					req.Header.Get("Api-Key"))
 			}
 
@@ -333,7 +333,7 @@ func TestRegisterDevice(t *testing.T) {
 			"https://test.com",
 			"https://test.com",
 			"https://test.com",
-			"test-api-key",
+			"test-handlers-key",
 			mockSaver,
 		)
 
@@ -428,7 +428,7 @@ func TestRegisterDevice(t *testing.T) {
 			"https://test.com",
 			"https://test.com",
 			"https://test.com",
-			"test-api-key",
+			"test-handlers-key",
 			mockSaver,
 		)
 

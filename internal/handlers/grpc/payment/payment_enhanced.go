@@ -3,8 +3,8 @@ package payment
 import (
 	"context"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
+	grpchandler "kaspi-api-wrapper/internal/handlers/grpc"
 	paymentv1 "kaspi-api-wrapper/pkg/protos/gen/go/payment"
 )
 

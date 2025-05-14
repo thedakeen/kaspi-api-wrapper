@@ -3,9 +3,9 @@ package refund_enhanced
 import (
 	"context"
 	"google.golang.org/grpc"
-	"kaspi-api-wrapper/internal/api"
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/handlers"
+	grpchandler "kaspi-api-wrapper/internal/handlers/grpc"
 	refundenhancedv1 "kaspi-api-wrapper/pkg/protos/gen/go/refund_enhanced"
 	"log/slog"
 	"strconv"
@@ -14,10 +14,10 @@ import (
 type serverAPI struct {
 	refundenhancedv1.UnimplementedEnhancedRefundServiceServer
 	log                    *slog.Logger
-	refundEnhancedProvider api.RefundEnhancedProvider
+	refundEnhancedProvider handlers.RefundEnhancedProvider
 }
 
-func Register(gRPC *grpc.Server, log *slog.Logger, refundEnhancedProvider api.RefundEnhancedProvider) {
+func Register(gRPC *grpc.Server, log *slog.Logger, refundEnhancedProvider handlers.RefundEnhancedProvider) {
 	refundenhancedv1.RegisterEnhancedRefundServiceServer(gRPC, &serverAPI{
 		log:                    log,
 		refundEnhancedProvider: refundEnhancedProvider,

@@ -2,8 +2,8 @@ package http_test
 
 import (
 	"errors"
-	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	httphandler "kaspi-api-wrapper/internal/handlers/http"
 	"net/http"
 	"net/http/httptest"
 	"strings"

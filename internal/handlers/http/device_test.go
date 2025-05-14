@@ -3,8 +3,8 @@ package http_test
 import (
 	"context"
 	"encoding/json"
-	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	httphandler "kaspi-api-wrapper/internal/handlers/http"
 	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
@@ -79,7 +79,7 @@ func TestGetTradePoints(t *testing.T) {
 
 		h := httphandler.NewHandlers(log, mockProvider, nil, nil, nil, nil, nil, nil)
 
-		req, err := createRequest(http.MethodGet, "/api/tradepoints", nil)
+		req, err := createRequest(http.MethodGet, "/handlers/tradepoints", nil)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -131,7 +131,7 @@ func TestGetTradePoints(t *testing.T) {
 
 		h := httphandler.NewHandlers(log, mockProvider, nil, nil, nil, nil, nil, nil)
 
-		req, err := createRequest(http.MethodGet, "/api/tradepoints", nil)
+		req, err := createRequest(http.MethodGet, "/handlers/tradepoints", nil)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -180,7 +180,7 @@ func TestRegisterDevice(t *testing.T) {
 			TradePointID: 1,
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/device/register", registerReq)
+		req, err := createRequest(http.MethodPost, "/handlers/device/register", registerReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -228,7 +228,7 @@ func TestRegisterDevice(t *testing.T) {
 			DeviceID: "TEST-DEVICE",
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/device/register", registerReq)
+		req, err := createRequest(http.MethodPost, "/handlers/device/register", registerReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -276,7 +276,7 @@ func TestDeleteDevice(t *testing.T) {
 			DeviceToken: "test-token",
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/device/delete", deleteReq)
+		req, err := createRequest(http.MethodPost, "/handlers/device/delete", deleteReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -311,7 +311,7 @@ func TestDeleteDevice(t *testing.T) {
 			DeviceToken: "",
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/device/delete", deleteReq)
+		req, err := createRequest(http.MethodPost, "/handlers/device/delete", deleteReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
