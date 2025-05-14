@@ -67,3 +67,9 @@ setup:
 	@echo "   HTTP server is available at http://localhost:8081"
 	@echo "   gRPC server is available at http://localhost:8082"
 	@echo "   You can view logs with: docker-compose logs -f"
+
+
+
+.PHONY: docker/db/check
+docker/db/check:
+	docker exec -it kaspi-wrapper-db psql -U postgres -d kaspi_pay
