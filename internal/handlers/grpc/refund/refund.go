@@ -24,6 +24,13 @@ func Register(gRPC *grpc.Server, log *slog.Logger, refundProvider handlers.Refun
 	})
 }
 
+func RegisterTest(log *slog.Logger, refundProvider handlers.RefundProvider) refundv1.RefundServiceServer {
+	return &serverAPI{
+		log:            log,
+		refundProvider: refundProvider,
+	}
+}
+
 // CreateRefundQR implements kaspiv1.RefundServiceServer
 func (s *serverAPI) CreateRefundQR(ctx context.Context, req *refundv1.CreateRefundQRRequest) (*refundv1.CreateRefundQRResponse, error) {
 	domainReq := domain.QRRefundCreateRequest{

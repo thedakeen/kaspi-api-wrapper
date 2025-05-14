@@ -25,6 +25,14 @@ func Register(gRPC *grpc.Server, log *slog.Logger, deviceProvider handlers.Devic
 	})
 }
 
+func RegisterTest(log *slog.Logger, deviceProvider handlers.DeviceProvider, deviceEnhancedProvider handlers.DeviceEnhancedProvider) devicev1.DeviceServiceServer {
+	return &serverAPI{
+		log:                    log,
+		deviceProvider:         deviceProvider,
+		deviceEnhancedProvider: deviceEnhancedProvider,
+	}
+}
+
 // GetTradePoints implements kaspiv1.DeviceServiceServer
 func (s *serverAPI) GetTradePoints(ctx context.Context, req *devicev1.GetTradePointsRequest) (*devicev1.GetTradePointsResponse, error) {
 	log := s.log.With(

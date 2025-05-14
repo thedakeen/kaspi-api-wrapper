@@ -23,6 +23,13 @@ func Register(gRPC *grpc.Server, log *slog.Logger, utilityProvider handlers.Util
 	})
 }
 
+func RegisterTest(log *slog.Logger, utilityProvider handlers.UtilityProvider) utilityv1.UtilityServiceServer {
+	return &serverAPI{
+		log:             log,
+		utilityProvider: utilityProvider,
+	}
+}
+
 // HealthCheck implements kaspiv1.UtilityServiceServer
 func (s *serverAPI) HealthCheck(ctx context.Context, req *utilityv1.HealthCheckRequest) (*utilityv1.HealthCheckResponse, error) {
 	err := s.utilityProvider.HealthCheck(ctx)

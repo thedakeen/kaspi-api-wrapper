@@ -24,6 +24,13 @@ func Register(gRPC *grpc.Server, log *slog.Logger, refundEnhancedProvider handle
 	})
 }
 
+func RegisterTest(log *slog.Logger, refundEnhancedProvider handlers.RefundEnhancedProvider) refundenhancedv1.EnhancedRefundServiceServer {
+	return &serverAPI{
+		log:                    log,
+		refundEnhancedProvider: refundEnhancedProvider,
+	}
+}
+
 // RefundPaymentEnhanced implements kaspiv1.EnhancedRefundServiceServer
 func (s *serverAPI) RefundPaymentEnhanced(ctx context.Context, req *refundenhancedv1.RefundPaymentEnhancedRequest) (*refundenhancedv1.RefundPaymentEnhancedResponse, error) {
 	domainReq := domain.EnhancedRefundRequest{

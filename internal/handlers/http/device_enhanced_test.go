@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"kaspi-api-wrapper/internal/domain"
 	httphandler "kaspi-api-wrapper/internal/handlers/http"
 	"kaspi-api-wrapper/internal/validator"
@@ -11,8 +12,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type MockDeviceEnhancedProvider struct {
@@ -53,19 +52,19 @@ func TestGetTradePointsEnhancedHandler(t *testing.T) {
 		h := httphandler.NewHandlers(log, nil, nil, nil, nil, mockProvider, nil, nil)
 
 		r := chi.NewRouter()
-		r.Get("/handlers/tradepoints/enhanced/{organizationBin}", h.GetTradePointsEnhanced)
+		r.Get("/tradepoints/enhanced/{organizationBin}", h.GetTradePointsEnhanced)
 
-		req, err := http.NewRequest("GET", "/api/tradepoints/enhanced/180340021791", nil)
+		req, err := http.NewRequest("GET", "/tradepoints/enhanced/180340021791", nil)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
-
 		r.ServeHTTP(recorder, req)
 
 		if recorder.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, recorder.Code)
+			t.Logf("Response body: %s", recorder.Body.String())
 		}
 
 		var resp httphandler.Response
@@ -125,23 +124,26 @@ func TestRegisterDeviceEnhancedHandler(t *testing.T) {
 
 		h := httphandler.NewHandlers(log, nil, nil, nil, nil, mockProvider, nil, nil)
 
+		r := chi.NewRouter()
+		r.Post("/device/register/enhanced", h.RegisterDeviceEnhanced)
+
 		reqBody := `{
 			"DeviceId": "TEST-DEVICE",
 			"TradePointId": 1,
 			"OrganizationBin": "180340021791"
 		}`
-		req, err := http.NewRequest("POST", "/api/device/register/enhanced", strings.NewReader(reqBody))
+		req, err := http.NewRequest("POST", "/device/register/enhanced", strings.NewReader(reqBody))
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
 		req.Header.Set("Content-Type", "application/json")
 
 		recorder := httptest.NewRecorder()
-
-		h.RegisterDeviceEnhanced(recorder, req)
+		r.ServeHTTP(recorder, req)
 
 		if recorder.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, recorder.Code)
+			t.Logf("Response body: %s", recorder.Body.String())
 		}
 
 		var resp httphandler.Response
@@ -186,22 +188,25 @@ func TestRegisterDeviceEnhancedHandler(t *testing.T) {
 
 		h := httphandler.NewHandlers(log, nil, nil, nil, nil, mockProvider, nil, nil)
 
+		r := chi.NewRouter()
+		r.Post("/device/register/enhanced", h.RegisterDeviceEnhanced)
+
 		reqBody := `{
-        "DeviceId": "TEST-DEVICE",
-        "TradePointId": 1
-    }`
-		req, err := http.NewRequest("POST", "/api/device/register/enhanced", strings.NewReader(reqBody))
+			"DeviceId": "TEST-DEVICE",
+			"TradePointId": 1
+		}`
+		req, err := http.NewRequest("POST", "/device/register/enhanced", strings.NewReader(reqBody))
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
 		req.Header.Set("Content-Type", "application/json")
 
 		recorder := httptest.NewRecorder()
-
-		h.RegisterDeviceEnhanced(recorder, req)
+		r.ServeHTTP(recorder, req)
 
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, recorder.Code)
+			t.Logf("Response body: %s", recorder.Body.String())
 		}
 
 		var resp httphandler.Response
@@ -241,22 +246,25 @@ func TestDeleteDeviceEnhancedHandler(t *testing.T) {
 
 		h := httphandler.NewHandlers(log, nil, nil, nil, nil, mockProvider, nil, nil)
 
+		r := chi.NewRouter()
+		r.Post("/device/delete/enhanced", h.DeleteDeviceEnhanced)
+
 		reqBody := `{
 			"DeviceToken": "test-token",
 			"OrganizationBin": "180340021791"
 		}`
-		req, err := http.NewRequest("POST", "/api/device/delete/enhanced", strings.NewReader(reqBody))
+		req, err := http.NewRequest("POST", "/device/delete/enhanced", strings.NewReader(reqBody))
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
 		req.Header.Set("Content-Type", "application/json")
 
 		recorder := httptest.NewRecorder()
-
-		h.DeleteDeviceEnhanced(recorder, req)
+		r.ServeHTTP(recorder, req)
 
 		if recorder.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, recorder.Code)
+			t.Logf("Response body: %s", recorder.Body.String())
 		}
 
 		var resp httphandler.Response
@@ -286,21 +294,24 @@ func TestDeleteDeviceEnhancedHandler(t *testing.T) {
 
 		h := httphandler.NewHandlers(log, nil, nil, nil, nil, mockProvider, nil, nil)
 
+		r := chi.NewRouter()
+		r.Post("/device/delete/enhanced", h.DeleteDeviceEnhanced)
+
 		reqBody := `{
             "OrganizationBin": "180340021791"
         }`
-		req, err := http.NewRequest("POST", "/api/device/delete/enhanced", strings.NewReader(reqBody))
+		req, err := http.NewRequest("POST", "/device/delete/enhanced", strings.NewReader(reqBody))
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
 		req.Header.Set("Content-Type", "application/json")
 
 		recorder := httptest.NewRecorder()
-
-		h.DeleteDeviceEnhanced(recorder, req)
+		r.ServeHTTP(recorder, req)
 
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, recorder.Code)
+			t.Logf("Response body: %s", recorder.Body.String())
 		}
 
 		var resp httphandler.Response

@@ -26,6 +26,14 @@ func Register(gRPC *grpc.Server, log *slog.Logger, paymentProvider handlers.Paym
 	})
 }
 
+func RegisterTest(log *slog.Logger, paymentProvider handlers.PaymentProvider, paymentEnhancedProvider handlers.PaymentEnhancedProvider) paymentv1.PaymentServiceServer {
+	return &serverAPI{
+		log:                     log,
+		paymentProvider:         paymentProvider,
+		paymentEnhancedProvider: paymentEnhancedProvider,
+	}
+}
+
 // CreateQR implements kaspiv1.PaymentServiceServer
 func (s *serverAPI) CreateQR(ctx context.Context, req *paymentv1.CreateQRRequest) (*paymentv1.CreateQRResponse, error) {
 	domainReq := domain.QRCreateRequest{
