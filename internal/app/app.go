@@ -1,10 +1,10 @@
 package app
 
 import (
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
-	"kaspi-api-wrapper/internal/api/http"
 	grpcapp "kaspi-api-wrapper/internal/app/grpc"
 	"kaspi-api-wrapper/internal/app/http"
+	grpchandler "kaspi-api-wrapper/internal/handlers/grpc"
+	"kaspi-api-wrapper/internal/handlers/http"
 	"kaspi-api-wrapper/internal/service"
 	"log/slog"
 )

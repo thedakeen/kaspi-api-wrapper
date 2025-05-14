@@ -3,9 +3,9 @@ package device
 import (
 	"context"
 	"google.golang.org/grpc"
-	"kaspi-api-wrapper/internal/api"
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/handlers"
+	grpchandler "kaspi-api-wrapper/internal/handlers/grpc"
 	devicev1 "kaspi-api-wrapper/pkg/protos/gen/go/device"
 	"log/slog"
 )
@@ -13,11 +13,11 @@ import (
 type serverAPI struct {
 	devicev1.UnimplementedDeviceServiceServer
 	log                    *slog.Logger
-	deviceProvider         api.DeviceProvider
-	deviceEnhancedProvider api.DeviceEnhancedProvider
+	deviceProvider         handlers.DeviceProvider
+	deviceEnhancedProvider handlers.DeviceEnhancedProvider
 }
 
-func Register(gRPC *grpc.Server, log *slog.Logger, deviceProvider api.DeviceProvider, deviceEnhancedProvider api.DeviceEnhancedProvider) {
+func Register(gRPC *grpc.Server, log *slog.Logger, deviceProvider handlers.DeviceProvider, deviceEnhancedProvider handlers.DeviceEnhancedProvider) {
 	devicev1.RegisterDeviceServiceServer(gRPC, &serverAPI{
 		log:                    log,
 		deviceProvider:         deviceProvider,
@@ -81,7 +81,7 @@ func (s *serverAPI) DeleteDevice(ctx context.Context, req *devicev1.DeleteDevice
 		slog.String("method", "DeleteDevice"),
 		slog.String("deviceToken", req.DeviceToken),
 	)
-	
+
 	err := s.deviceProvider.DeleteDevice(ctx, req.DeviceToken)
 	if err != nil {
 		log.Error("failed to delete device", "error", err.Error())

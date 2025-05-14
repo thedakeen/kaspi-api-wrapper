@@ -4,9 +4,9 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"kaspi-api-wrapper/internal/api"
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/handlers"
+	grpchandler "kaspi-api-wrapper/internal/handlers/grpc"
 	paymentv1 "kaspi-api-wrapper/pkg/protos/gen/go/payment"
 	"log/slog"
 )
@@ -14,11 +14,11 @@ import (
 type serverAPI struct {
 	paymentv1.UnimplementedPaymentServiceServer
 	log                     *slog.Logger
-	paymentProvider         api.PaymentProvider
-	paymentEnhancedProvider api.PaymentEnhancedProvider
+	paymentProvider         handlers.PaymentProvider
+	paymentEnhancedProvider handlers.PaymentEnhancedProvider
 }
 
-func Register(gRPC *grpc.Server, log *slog.Logger, paymentProvider api.PaymentProvider, paymentEnhancedProvider api.PaymentEnhancedProvider) {
+func Register(gRPC *grpc.Server, log *slog.Logger, paymentProvider handlers.PaymentProvider, paymentEnhancedProvider handlers.PaymentEnhancedProvider) {
 	paymentv1.RegisterPaymentServiceServer(gRPC, &serverAPI{
 		log:                     log,
 		paymentProvider:         paymentProvider,

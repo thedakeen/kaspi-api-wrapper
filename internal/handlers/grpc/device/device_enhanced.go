@@ -2,8 +2,8 @@ package device
 
 import (
 	"context"
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
+	grpchandler "kaspi-api-wrapper/internal/handlers/grpc"
 	devicev1 "kaspi-api-wrapper/pkg/protos/gen/go/device"
 )
 

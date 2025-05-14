@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	httphandler "kaspi-api-wrapper/internal/api/http"
+	httphandler "kaspi-api-wrapper/internal/handlers/http"
 	"log/slog"
 	"net"
 	"net/http"

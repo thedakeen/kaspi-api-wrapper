@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-chi/chi/v5"
-	httphandler "kaspi-api-wrapper/internal/api/http"
 	"kaspi-api-wrapper/internal/domain"
+	httphandler "kaspi-api-wrapper/internal/handlers/http"
 	"kaspi-api-wrapper/internal/validator"
 	"net/http"
 	"net/http/httptest"
@@ -124,7 +124,7 @@ func TestCreateQRHandler(t *testing.T) {
 			ExternalID:  "15",
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/qr/create", createReq)
+		req, err := createRequest(http.MethodPost, "/handlers/qr/create", createReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -178,7 +178,7 @@ func TestCreateQRHandler(t *testing.T) {
 			ExternalID:  "15",
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/qr/create", createReq)
+		req, err := createRequest(http.MethodPost, "/handlers/qr/create", createReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -246,7 +246,7 @@ func TestCreatePaymentLinkFunc(t *testing.T) {
 			ExternalID:  "15",
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/qr/create-link", createReq)
+		req, err := createRequest(http.MethodPost, "/handlers/qr/create-link", createReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -312,7 +312,7 @@ func TestCreatePaymentLinkFunc(t *testing.T) {
 			ExternalID:  "15",
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/qr/create-link", createReq)
+		req, err := createRequest(http.MethodPost, "/handlers/qr/create-link", createReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}
@@ -356,7 +356,7 @@ func TestCreatePaymentLinkFunc(t *testing.T) {
 			ExternalID:  "15",
 		}
 
-		req, err := createRequest(http.MethodPost, "/api/qr/create-link", createReq)
+		req, err := createRequest(http.MethodPost, "/handlers/qr/create-link", createReq)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)
 		}

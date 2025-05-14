@@ -4,9 +4,9 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"kaspi-api-wrapper/internal/api"
-	grpchandler "kaspi-api-wrapper/internal/api/grpc"
 	"kaspi-api-wrapper/internal/domain"
+	"kaspi-api-wrapper/internal/handlers"
+	grpchandler "kaspi-api-wrapper/internal/handlers/grpc"
 	refundv1 "kaspi-api-wrapper/pkg/protos/gen/go/refund"
 	"log/slog"
 )
@@ -14,10 +14,10 @@ import (
 type serverAPI struct {
 	refundv1.UnimplementedRefundServiceServer
 	log            *slog.Logger
-	refundProvider api.RefundProvider
+	refundProvider handlers.RefundProvider
 }
 
-func Register(gRPC *grpc.Server, log *slog.Logger, refundProvider api.RefundProvider) {
+func Register(gRPC *grpc.Server, log *slog.Logger, refundProvider handlers.RefundProvider) {
 	refundv1.RegisterRefundServiceServer(gRPC, &serverAPI{
 		log:            log,
 		refundProvider: refundProvider,

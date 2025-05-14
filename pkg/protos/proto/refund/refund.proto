@@ -5,7 +5,7 @@ package kaspi.api.v1;
 import "google/protobuf/timestamp.proto";
 
 
-option go_package = "kaspi-api-wrapper/api/proto/kaspi/v1;kaspiv1";
+option go_package = "kaspi-handlers-wrapper/handlers/proto/kaspi/v1;kaspiv1";
 
 service RefundService {
   rpc CreateRefundQR(CreateRefundQRRequest) returns (CreateRefundQRResponse);

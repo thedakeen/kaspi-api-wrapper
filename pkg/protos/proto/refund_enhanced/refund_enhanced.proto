@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package kaspi.api.v1;
 
-option go_package = "kaspi-api-wrapper/api/proto/kaspi/v1;kaspiv1";
+option go_package = "kaspi-handlers-wrapper/handlers/proto/kaspi/v1;kaspiv1";
 
 service EnhancedRefundService {
   rpc RefundPaymentEnhanced(RefundPaymentEnhancedRequest) returns (RefundPaymentEnhancedResponse);

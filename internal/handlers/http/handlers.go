@@ -3,7 +3,7 @@ package http
 import (
 	"encoding/json"
 	"io"
-	"kaspi-api-wrapper/internal/api"
+	"kaspi-api-wrapper/internal/handlers"
 	"log/slog"
 	"net/http"
 )
@@ -18,28 +18,28 @@ type Response struct {
 // Handlers contains all HTTP handlers for the API
 type Handlers struct {
 	log             *slog.Logger
-	deviceProvider  api.DeviceProvider
-	paymentProvider api.PaymentProvider
-	utilityProvider api.UtilityProvider
-	refundProvider  api.RefundProvider
+	deviceProvider  handlers.DeviceProvider
+	paymentProvider handlers.PaymentProvider
+	utilityProvider handlers.UtilityProvider
+	refundProvider  handlers.RefundProvider
 
-	deviceEnhancedProvider  api.DeviceEnhancedProvider
-	paymentEnhancedProvider api.PaymentEnhancedProvider
-	refundEnhancedProvider  api.RefundEnhancedProvider
+	deviceEnhancedProvider  handlers.DeviceEnhancedProvider
+	paymentEnhancedProvider handlers.PaymentEnhancedProvider
+	refundEnhancedProvider  handlers.RefundEnhancedProvider
 	//kaspiSvc *service.KaspiService
 }
 
 // NewHandlers creates a new Handlers instance
 func NewHandlers(
 	log *slog.Logger,
-	deviceProvider api.DeviceProvider,
-	paymentProvider api.PaymentProvider,
-	utilityProvider api.UtilityProvider,
-	refundProvider api.RefundProvider,
+	deviceProvider handlers.DeviceProvider,
+	paymentProvider handlers.PaymentProvider,
+	utilityProvider handlers.UtilityProvider,
+	refundProvider handlers.RefundProvider,
 
-	deviceEnhancedProvider api.DeviceEnhancedProvider,
-	paymentEnhancedProvider api.PaymentEnhancedProvider,
-	refundEnhancedProvider api.RefundEnhancedProvider,
+	deviceEnhancedProvider handlers.DeviceEnhancedProvider,
+	paymentEnhancedProvider handlers.PaymentEnhancedProvider,
+	refundEnhancedProvider handlers.RefundEnhancedProvider,
 ) *Handlers {
 	return &Handlers{
 		log:             log,

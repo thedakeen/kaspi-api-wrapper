@@ -3,7 +3,7 @@ package http
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	middleware2 "kaspi-api-wrapper/internal/api/http/middleware"
+	middleware2 "kaspi-api-wrapper/internal/handlers/http/middleware"
 	"log/slog"
 )
 
@@ -31,7 +31,7 @@ func (r *Router) Setup() *chi.Mux {
 
 	router.Get("/health", r.handlers.HealthCheck)
 
-	router.Route("/api", func(apiRouter chi.Router) {
+	router.Route("/handlers", func(apiRouter chi.Router) {
 		// 2.2.2 - Get trade points
 		apiRouter.Get("/tradepoints", r.handlers.GetTradePoints)
 
