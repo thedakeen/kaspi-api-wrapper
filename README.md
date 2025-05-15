@@ -1,4 +1,4 @@
-# Kaspi Pay API Wrapper
+# Kaspi Pay/QR API Wrapper
 
 This service acts as a middleware between your application and Kaspi Pay's payment processing system. It implements three integration schemes described in the Kaspi Pay API documentation:
 
