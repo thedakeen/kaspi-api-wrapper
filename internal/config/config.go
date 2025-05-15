@@ -20,6 +20,10 @@ type KaspiAPI struct {
 	BaseURLStd   string `env:"KASPI_API_BASE_URL_STANDARD"`
 	BaseURLEnh   string `env:"KASPI_API_BASE_URL_ENHANCED"`
 	ApiKey       string `env:"KASPI_API_KEY"`
+
+	PfxFile    string `env:"KASPI_PFX_FILE" env-default:""`
+	KeyPass    string `env:"KASPI_KEY_PASSWORD" env-default:""`
+	RootCAFile string `env:"KASPI_ROOT_CA_FILE" env-default:""`
 }
 
 type Database struct {

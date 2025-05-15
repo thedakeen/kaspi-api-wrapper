@@ -1,0 +1,12 @@
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = mtokentest.kaspi.kz
+DNS.2 = mock-kaspi-api-standard
+DNS.3 = mock-kaspi-api-enhanced
+DNS.4 = localhost
+IP.1 = 127.0.0.1

@@ -2,16 +2,61 @@ version: '3.8'
 
 services:
 
-  mock-kaspi-api:
+  mock-kaspi-api-basic:
     image: mockserver/mockserver:latest
     container_name: mock-kaspi-api
     ports:
-      - "8080:1080"
+      - "8543:1080"
     environment:
       MOCKSERVER_INITIALIZATION_JSON_PATH: /mockserver-init.json
       MOCKSERVER_WATCH_INITIALIZATION_JSON: "true"
     volumes:
       - ./mockserver/mockserver-init.json:/mockserver-init.json
+    networks:
+      - kaspi-network
+
+  mock-kaspi-api-standard:
+    image: mockserver/mockserver:latest
+    container_name: mock-kaspi-api-standard
+    ports:
+      - "8544:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /mockserver-init-standard.json
+      MOCKSERVER_WATCH_INITIALIZATION_JSON: "true"
+      MOCKSERVER_TLS_CERTIFICATE: /certs/server.crt
+      MOCKSERVER_TLS_CERTIFICATE_PRIVATE_KEY: /certs/server.key
+      MOCKSERVER_TLS_CERTIFICATE_CHAIN: /certs/ca.crt
+      MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED: "true"
+      MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_CERTIFICATE_CHAIN: /certs/client-ca.crt
+    volumes:
+      - ./mockserver/mockserver-init-standard.json:/mockserver-init-standard.json
+      - ./certs/server.crt:/certs/server.crt
+      - ./certs/server.key:/certs/server.key
+      - ./certs/ca.crt:/certs/ca.crt
+      - ./certs/client-ca.crt:/certs/client-ca.crt
+    networks:
+      - kaspi-network
+
+
+  mock-kaspi-api-enhanced:
+    image: mockserver/mockserver:latest
+    container_name: mock-kaspi-api-enhanced
+    ports:
+      - "8545:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /mockserver-init-enhanced.json
+      MOCKSERVER_WATCH_INITIALIZATION_JSON: "true"
+      MOCKSERVER_TLS_CERTIFICATE: /certs/server.crt
+      MOCKSERVER_TLS_CERTIFICATE_PRIVATE_KEY: /certs/server.key
+      MOCKSERVER_TLS_CERTIFICATE_CHAIN: /certs/ca.crt
+      MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED: "true"
+      MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_CERTIFICATE_CHAIN: /certs/client-ca.crt
+    volumes:
+      - ./mockserver/mockserver-init-enhanced.json:/mockserver-init-enhanced.json
+      - ./certs/server.crt:/certs/server.crt
+      - ./certs/server.key:/certs/server.key
+      - ./certs/ca.crt:/certs/ca.crt
+      - ./certs/client-ca.crt:/certs/client-ca.crt
     networks:
       - kaspi-network
 
@@ -26,6 +71,7 @@ services:
       - "8082:8082"
     volumes:
       - ./.env:/app/.env
+      - ./certs:/app/certs
     restart: unless-stopped
     depends_on:
       - db

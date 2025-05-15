@@ -43,6 +43,7 @@ func setupTestService(log *slog.Logger, scheme string) (*service.KaspiService, *
 		"https://test.com",
 		"https://test.com",
 		"test-handlers-key",
+		nil,
 		mockSaver,
 	)
 
@@ -334,6 +335,7 @@ func TestRegisterDevice(t *testing.T) {
 			"https://test.com",
 			"https://test.com",
 			"test-handlers-key",
+			nil,
 			mockSaver,
 		)
 
@@ -429,6 +431,7 @@ func TestRegisterDevice(t *testing.T) {
 			"https://test.com",
 			"https://test.com",
 			"test-handlers-key",
+			nil,
 			mockSaver,
 		)
 

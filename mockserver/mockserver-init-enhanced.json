@@ -2,10 +2,23 @@
   {
     "httpRequest": {
       "method": "GET",
-      "path": "/r1/v01/partner/tradepoints",
+      "path": "/r3/v01/health/ping"
+    },
+    "httpResponse": {
+      "statusCode": 200,
       "headers": {
-        "Api-Key": ["test_api_key"]
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
       }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r3/v01/partner/tradepoints/.*"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -25,10 +38,7 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/r1/v01/device/register",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
+      "path": "/r3/v01/device/register"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -39,7 +49,7 @@
         "StatusCode": 0,
         "Message": "OK",
         "Data": {
-          "DeviceToken": "basic-2be4cc91-5895-48f8-8bc2-86c7bd419b3b"
+          "DeviceToken": "enhanced-2be4cc91-5895-48f8-8bc2-86c7bd419b3b"
         }
       }
     }
@@ -47,10 +57,7 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/r1/v01/device/delete",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
+      "path": "/r3/v01/device/delete"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -66,10 +73,7 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/r1/v01/qr/create",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
+      "path": "/r3/v01/qr/create"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -80,7 +84,7 @@
         "StatusCode": 0,
         "Message": "OK",
         "Data": {
-          "QrToken": "basic-51236903777280167836178166503744993984459",
+          "QrToken": "enhanced-51236903777280167836178166503744993984459",
           "ExpireDate": "2025-05-16T10:30:00+06:00",
           "QrPaymentId": 15,
           "PaymentMethods": [ "Gold", "Red", "Loan" ],
@@ -96,10 +100,7 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/r1/v01/qr/create-link",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
+      "path": "/r3/v01/qr/create-link"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -110,7 +111,7 @@
         "StatusCode": 0,
         "Message": "OK",
         "Data": {
-          "PaymentLink": "https://pay.kaspi.kz/pay/basic-59217969256592032202439955771435979527677",
+          "PaymentLink": "https://pay.kaspi.kz/pay/enhanced-59217969256592032202439955771435979527677",
           "ExpireDate": "2025-05-16T10:30:00+06:00",
           "PaymentId": 15,
           "PaymentMethods": [ "Gold", "Red", "Loan" ],
@@ -126,10 +127,7 @@
   {
     "httpRequest": {
       "method": "GET",
-      "path": "/r1/v01/payment/status/.*",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
+      "path": "/r3/v01/payment/status/.*"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -156,11 +154,84 @@
   },
   {
     "httpRequest": {
+      "method": "POST",
+      "path": "/r3/v01/payment/return"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "ReturnOperationId": 15
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
       "method": "GET",
-      "path": "/r1/v01/health/ping",
+      "path": "/r3/v01/remote/client-info"
+    },
+    "httpResponse": {
+      "statusCode": 200,
       "headers": {
-        "Api-Key": ["test_api_key"]
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "ClientName": "Иванов Иван Иванович"
+        }
       }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r3/v01/remote/create"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "QrPaymentId": 15
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r3/v01/remote/cancel"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "Status": "RemotePaymentCanceled"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r3/v01/test/payment/scan"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -176,10 +247,7 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/r1/v01/test/payment/scan",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
+      "path": "/r3/v01/test/payment/confirm"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -195,10 +263,7 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/r1/v01/test/payment/confirm",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
+      "path": "/r3/v01/test/payment/scanerror"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -214,29 +279,7 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/r1/v01/test/payment/scanerror",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
-    },
-    "httpResponse": {
-      "statusCode": 200,
-      "headers": {
-        "Content-Type": ["application/json"]
-      },
-      "body": {
-        "StatusCode": 0,
-        "Message": "OK"
-      }
-    }
-  },
-  {
-    "httpRequest": {
-      "method": "POST",
-      "path": "/r1/v01/test/payment/confirmerror",
-      "headers": {
-        "Api-Key": ["test_api_key"]
-      }
+      "path": "/r3/v01/test/payment/confirmerror"
     },
     "httpResponse": {
       "statusCode": 200,
