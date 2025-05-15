@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package kaspi.api.v1;
+
+option go_package = "kaspi-handlers-wrapper/handlers/proto/kaspi/v1;kaspiv1";
+
+service EnhancedRefundService {
+  rpc RefundPaymentEnhanced(RefundPaymentEnhancedRequest) returns (RefundPaymentEnhancedResponse);
+  rpc GetClientInfo(GetClientInfoRequest) returns (GetClientInfoResponse);
+  rpc CreateRemotePayment(CreateRemotePaymentRequest) returns (CreateRemotePaymentResponse);
+  rpc CancelRemotePayment(CancelRemotePaymentRequest) returns (CancelRemotePaymentResponse);
+}
+
+message RefundPaymentEnhancedRequest {
+  string device_token = 1;
+  int64 qr_payment_id = 2;
+  double amount = 3;
+  string organization_bin = 4;
+}
+
+message RefundPaymentEnhancedResponse {
+  int64 return_operation_id = 1;
+}
+
+message GetClientInfoRequest {
+  string phone_number = 1;
+  int64 device_token = 2;
+}
+
+message GetClientInfoResponse {
+  string client_name = 1;
+}
+
+message CreateRemotePaymentRequest {
+  string organization_bin = 1;
+  double amount = 2;
+  string phone_number = 3;
+  string device_token = 4;
+  string comment = 5;
+}
+
+message CreateRemotePaymentResponse {
+  int64 qr_payment_id = 1;
+}
+
+message CancelRemotePaymentRequest {
+  string organization_bin = 1;
+  int64 qr_payment_id = 2;
+  int64 device_token = 3;
+}
+
+message CancelRemotePaymentResponse {
+  string status = 1;
+}

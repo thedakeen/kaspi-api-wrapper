@@ -1,0 +1,336 @@
+[
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r2/v01/health/ping"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r2/v01/partner/tradepoints"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": [
+          { "TradePointId": 1, "TradePointName": "Магазин 1 (Ауэзова, 65)" },
+          { "TradePointId": 2, "TradePointName": "Магазин 2 (Жарокова, 48)" }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/device/register"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "DeviceToken": "standard-2be4cc91-5895-48f8-8bc2-86c7bd419b3b"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/device/delete"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/qr/create"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "QrToken": "standard-51236903777280167836178166503744993984459",
+          "ExpireDate": "2025-05-16T10:30:00+06:00",
+          "QrPaymentId": 15,
+          "PaymentMethods": [ "Gold", "Red", "Loan" ],
+          "QrPaymentBehaviorOptions": {
+            "StatusPollingInterval": 5,
+            "QrCodeScanWaitTimeout": 180,
+            "PaymentConfirmationTimeout": 65
+          }
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/qr/create-link"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "PaymentLink": "https://pay.kaspi.kz/pay/standard-59217969256592032202439955771435979527677",
+          "ExpireDate": "2025-05-16T10:30:00+06:00",
+          "PaymentId": 15,
+          "PaymentMethods": [ "Gold", "Red", "Loan" ],
+          "PaymentBehaviorOptions": {
+            "StatusPollingInterval": 5,
+            "LinkActivationWaitTimeout": 180,
+            "PaymentConfirmationTimeout": 65
+          }
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r2/v02/payment/status/.*"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "Status": "Wait",
+          "TransactionId": "35134863",
+          "LoanOfferName": "Рассрочка 0-0-12",
+          "LoanTerm": 12,
+          "IsOffer": true,
+          "ProductType": "Loan",
+          "Amount": 200.00,
+          "StoreName": "Магазин 1",
+          "Address": "Ауэзова 65",
+          "City": "Алматы"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/return/create"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "QrToken": "standard-refund-51236903777280167836178166503744993984459",
+          "ExpireDate": "2025-05-16T10:30:00+06:00",
+          "QrReturnId": 15,
+          "QrReturnBehaviorOptions": {
+            "QrCodeScanEventPollingInterval": 5,
+            "QrCodeScanWaitTimeout": 180
+          }
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r2/v01/return/status/.*"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "Status": "QrTokenCreated"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/return/operations"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": [
+          {
+            "QrPaymentId": 900077110,
+            "TransactionDate": "2025-05-08T11:35:48.156+06:00",
+            "Amount": 1.00
+          },
+          {
+            "QrPaymentId": 900077111,
+            "TransactionDate": "2025-05-07T10:25:32.421+06:00",
+            "Amount": 500.00
+          }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r2/v01/payment/details",
+      "queryStringParameters": {
+        "QrPaymentId": ["900077110"],
+        "DeviceToken": ["standard-2be4cc91-5895-48f8-8bc2-86c7bd419b3b"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "QrPaymentId": 900077110,
+          "TotalAmount": 1.00,
+          "AvailableReturnAmount": 1.00,
+          "TransactionDate": "2025-05-08T11:35:48.156+06:00"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/payment/return"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "ReturnOperationId": 15
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/test/payment/scan"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/test/payment/confirm"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/test/payment/scanerror"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r2/v01/test/payment/confirmerror"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  }
+]

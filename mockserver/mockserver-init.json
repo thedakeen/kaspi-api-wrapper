@@ -1,0 +1,252 @@
+[
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r1/v01/partner/tradepoints",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": [
+          { "TradePointId": 1, "TradePointName": "Магазин 1 (Ауэзова, 65)" },
+          { "TradePointId": 2, "TradePointName": "Магазин 2 (Жарокова, 48)" }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/device/register",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "DeviceToken": "basic-2be4cc91-5895-48f8-8bc2-86c7bd419b3b"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/device/delete",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/qr/create",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "QrToken": "basic-51236903777280167836178166503744993984459",
+          "ExpireDate": "2025-05-16T10:30:00+06:00",
+          "QrPaymentId": 15,
+          "PaymentMethods": [ "Gold", "Red", "Loan" ],
+          "QrPaymentBehaviorOptions": {
+            "StatusPollingInterval": 5,
+            "QrCodeScanWaitTimeout": 180,
+            "PaymentConfirmationTimeout": 65
+          }
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/qr/create-link",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "PaymentLink": "https://pay.kaspi.kz/pay/basic-59217969256592032202439955771435979527677",
+          "ExpireDate": "2025-05-16T10:30:00+06:00",
+          "PaymentId": 15,
+          "PaymentMethods": [ "Gold", "Red", "Loan" ],
+          "PaymentBehaviorOptions": {
+            "StatusPollingInterval": 5,
+            "LinkActivationWaitTimeout": 180,
+            "PaymentConfirmationTimeout": 65
+          }
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r1/v02/payment/status/.*",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK",
+        "Data": {
+          "Status": "Wait",
+          "TransactionId": "35134863",
+          "LoanOfferName": "Рассрочка 0-0-12",
+          "LoanTerm": 12,
+          "IsOffer": true,
+          "ProductType": "Loan",
+          "Amount": 200.00,
+          "StoreName": "Магазин 1",
+          "Address": "Ауэзова 65",
+          "City": "Алматы"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/r1/v01/health/ping",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/test/payment/scan",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/test/payment/confirm",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/test/payment/scanerror",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/r1/v01/test/payment/confirmerror",
+      "headers": {
+        "Api-Key": ["test_api_key"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "StatusCode": 0,
+        "Message": "OK"
+      }
+    }
+  }
+]

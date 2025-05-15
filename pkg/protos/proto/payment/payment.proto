@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package kaspi.api.v1;
+
+import "google/protobuf/timestamp.proto";
+
+
+option go_package = "kaspi-handlers-wrapper/handlers/proto/kaspi/v1;kaspiv1";
+
+service PaymentService {
+  // Basic/Standard scheme methods
+  rpc CreateQR(CreateQRRequest) returns (CreateQRResponse);
+  rpc CreatePaymentLink(CreatePaymentLinkRequest) returns (CreatePaymentLinkResponse);
+  rpc GetPaymentStatus(GetPaymentStatusRequest) returns (GetPaymentStatusResponse);
+
+  // Enhanced scheme methods
+  rpc CreateQREnhanced(CreateQREnhancedRequest) returns (CreateQRResponse);
+  rpc CreatePaymentLinkEnhanced(CreatePaymentLinkEnhancedRequest) returns (CreatePaymentLinkResponse);
+}
+
+message QRPaymentBehaviorOptions {
+  int64 status_polling_interval = 1;
+  int64 qr_code_scan_wait_timeout = 2;
+  int64 payment_confirmation_timeout = 3;
+}
+
+message PaymentBehaviorOptions {
+  int64 status_polling_interval = 1;
+  int64 link_activation_wait_timeout = 2;
+  int64 payment_confirmation_timeout = 3;
+}
+
+message CreateQRRequest {
+  string device_token = 1;
+  double amount = 2;
+  string external_id = 3;
+}
+
+message CreateQRResponse {
+  string qr_token = 1;
+  google.protobuf.Timestamp expire_date = 2;
+  int64 qr_payment_id = 3;
+  repeated string payment_methods = 4;
+  QRPaymentBehaviorOptions qr_payment_behavior_options = 5;
+}
+
+message CreatePaymentLinkRequest {
+  string device_token = 1;
+  double amount = 2;
+  string external_id = 3;
+}
+
+message CreatePaymentLinkResponse {
+  string payment_link = 1;
+  google.protobuf.Timestamp expire_date = 2;
+  int64 payment_id = 3;
+  repeated string payment_methods = 4;
+  PaymentBehaviorOptions payment_behavior_options = 5;
+}
+
+message GetPaymentStatusRequest {
+  int64 qr_payment_id = 1;
+}
+
+message GetPaymentStatusResponse {
+  string status = 1;
+  string transaction_id = 2;
+  string loan_offer_name = 3;
+  int64 loan_term = 4;
+  bool is_offer = 5;
+  string product_type = 6;
+  double amount = 7;
+  string store_name = 8;
+  string address = 9;
+  string city = 10;
+}
+
+
+// Enhanced messages
+message CreateQREnhancedRequest {
+  string device_token = 1;
+  double amount = 2;
+  string external_id = 3;
+  string organization_bin = 4;
+}
+
+message CreatePaymentLinkEnhancedRequest {
+  string device_token = 1;
+  double amount = 2;
+  string external_id = 3;
+  string organization_bin = 4;
+}
