@@ -126,7 +126,7 @@
   {
     "httpRequest": {
       "method": "GET",
-      "path": "/r1/v01/payment/status/.*",
+      "path": "/r1/v02/payment/status/.*",
       "headers": {
         "Api-Key": ["test_api_key"]
       }

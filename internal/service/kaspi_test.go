@@ -677,9 +677,12 @@ func TestGetPaymentStatus(t *testing.T) {
 		log := setupTestLogger()
 		svc, mockClient := setupTestService(log, "basic")
 
+		versionCaptured := false
+
 		mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
-			if req.URL.Path != "/payment/status/15" {
-				t.Errorf("Expected URL path /payment/status/15, got %s", req.URL.Path)
+
+			if req.URL.Path == "/payment/status/15" {
+				versionCaptured = true
 			}
 
 			if req.Method != http.MethodGet {
@@ -687,27 +690,31 @@ func TestGetPaymentStatus(t *testing.T) {
 			}
 
 			return testutils.NewMockResponse(http.StatusOK, `{
-				"StatusCode": 0,
-				"Message": "OK",
-				"Data": {
-					"Status": "Wait",
-					"TransactionId": "35134863",
-					"LoanOfferName": "Рассрочка 0-0-12",
-					"LoanTerm": 12,
-					"IsOffer": true,
-					"ProductType": "Loan",
-					"Amount": 200.00,
-					"StoreName": "Store 1",
-					"Address": "Test Address",
-					"City": "Almaty"
-				}
-			}`), nil
+             "StatusCode": 0,
+             "Message": "OK",
+             "Data": {
+                "Status": "Wait",
+                "TransactionId": "35134863",
+                "LoanOfferName": "Рассрочка 0-0-12",
+                "LoanTerm": 12,
+                "IsOffer": true,
+                "ProductType": "Loan",
+                "Amount": 200.00,
+                "StoreName": "Store 1",
+                "Address": "Test Address",
+                "City": "Almaty"
+             }
+          }`), nil
 		}
 
 		resp, err := svc.GetPaymentStatus(context.Background(), 15)
 
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
+		}
+
+		if !versionCaptured {
+			t.Errorf("Expected request to path /payment/status/15")
 		}
 
 		if resp.Status != "Wait" {

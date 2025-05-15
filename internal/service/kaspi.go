@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"software.sslmate.com/src/go-pkcs12"
+	"strings"
 	"time"
 )
 
@@ -79,20 +80,6 @@ func NewKaspiService(log *slog.Logger,
 			}
 
 		}
-		//tlsConfig, err := loadTLSConfig(scheme)
-		//if err != nil {
-		//	log.Error("failed to load TLS config", "error", err)
-		//	httpClient = &http.Client{Timeout: 30 * time.Second}
-		//} else {
-		//	transport := &http.Transport{
-		//		TLSClientConfig: tlsConfig,
-		//	}
-		//	httpClient = &http.Client{
-		//		Transport: transport,
-		//		Timeout:   30 * time.Second,
-		//	}
-		//}
-
 	default:
 		httpClient = &http.Client{Timeout: 30 * time.Second}
 	}
@@ -290,6 +277,95 @@ func (s *KaspiService) Request(ctx context.Context, method, path string, body, r
 // request makes a general request to the Kaspi API
 func (s *KaspiService) request(ctx context.Context, method, path string, body, result any) error {
 	return s.Request(ctx, method, path, body, result)
+}
+
+// requestV02 provides correct path for version 2 APIs (GetPaymentStatus)
+func (s *KaspiService) requestV02(ctx context.Context, method, path string, body, result any, version string) error {
+	const op = "service.kaspi.requestWithVersion"
+
+	baseURL := s.GetBaseURL()
+
+	baseURL = strings.Replace(baseURL, "/v01", "/"+version, 1)
+
+	url := baseURL + path
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("method", method),
+		slog.String("url", url),
+		slog.String("version", version),
+	)
+
+	var reqBody io.Reader
+	if body != nil {
+		jsonData, err := json.Marshal(body)
+		if err != nil {
+			return fmt.Errorf("%s:%w", op, err)
+		}
+		reqBody = bytes.NewBuffer(jsonData)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, url, reqBody)
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Request-ID", generateRequestID())
+
+	if s.scheme == "basic" {
+		req.Header.Set("Api-Key", s.apiKey)
+	} else {
+		log.Debug("using certificate auth", "scheme", s.scheme)
+	}
+
+	log.Debug("sending request")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+
+	log.Debug("received response", "status", resp.Status, "body", string(respBody))
+
+	var baseResp domain.BaseResponse
+	err = json.Unmarshal(respBody, &baseResp)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	if baseResp.StatusCode != 0 {
+		kaspiErr := &domain.KaspiError{
+			StatusCode: baseResp.StatusCode,
+			Message:    baseResp.Message,
+		}
+
+		if kaspiErr.StatusCode == -10000 {
+			log.Error("certificate authentication failed - check your client certificate setup")
+		}
+
+		return kaspiErr
+	}
+
+	if result != nil && baseResp.Data != nil {
+		dataJSON, err := json.Marshal(baseResp.Data)
+		if err != nil {
+			return fmt.Errorf("%s:%w", op, err)
+		}
+
+		err = json.Unmarshal(dataJSON, result)
+		if err != nil {
+			return fmt.Errorf("%s:%w", op, err)
+		}
+	}
+
+	return nil
 }
 
 //////// 	Device service methods	////////
@@ -503,7 +579,7 @@ func (s *KaspiService) GetPaymentStatus(ctx context.Context, qrPaymentID int64) 
 	path := fmt.Sprintf("/payment/status/%d", qrPaymentID)
 
 	var result domain.PaymentStatusResponse
-	err := s.request(ctx, http.MethodGet, path, nil, &result)
+	err := s.requestV02(ctx, http.MethodGet, path, nil, &result, "v02")
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
