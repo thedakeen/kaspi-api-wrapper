@@ -15,6 +15,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"software.sslmate.com/src/go-pkcs12"
 	"time"
 )
 
@@ -34,6 +35,14 @@ type KaspiService struct {
 	deviceSaver DeviceSaver
 }
 
+// TLSConfig for scheme 2 & 3
+type TLSConfig struct {
+	PfxFile       string // .pfx file containing both certificate and private key
+	Password      string // password for the private key
+	RootCAFile    string // root CA certificate
+	UseClientCert bool   // whether to use client certificate authentication
+}
+
 type DeviceSaver interface {
 	SaveDevice(ctx context.Context, deviceID string, deviceToken string, tradePointID int64) error
 	SaveDeviceEnhanced(ctx context.Context, deviceID string, deviceToken string, tradePointID int64, organizationBin string) error
@@ -45,10 +54,12 @@ func NewKaspiService(log *slog.Logger,
 	baseURLStd string,
 	baseURLEnh string,
 	apiKey string,
+	tlsConfig *TLSConfig,
 
 	deviceSaver DeviceSaver,
 ) *KaspiService {
 	var httpClient *http.Client
+	var err error
 
 	switch scheme {
 	case "basic":
@@ -56,23 +67,31 @@ func NewKaspiService(log *slog.Logger,
 			Timeout: 30 * time.Second,
 		}
 	case "standard", "enhanced":
-		//httpClient = &http.Client{
-		//	Timeout: 30 * time.Second,
-		//}
-
-		tlsConfig, err := loadTLSConfig(scheme)
-		if err != nil {
-			log.Error("failed to load TLS config", "error", err)
+		if tlsConfig == nil {
+			log.Error("TLS config not provided for scheme requiring client certificates",
+				"scheme", scheme)
 			httpClient = &http.Client{Timeout: 30 * time.Second}
 		} else {
-			transport := &http.Transport{
-				TLSClientConfig: tlsConfig,
+			tlsConfig.UseClientCert = true
+			httpClient, err = loadTLSConfig(log, tlsConfig)
+			if err != nil {
+				panic(err)
 			}
-			httpClient = &http.Client{
-				Transport: transport,
-				Timeout:   30 * time.Second,
-			}
+
 		}
+		//tlsConfig, err := loadTLSConfig(scheme)
+		//if err != nil {
+		//	log.Error("failed to load TLS config", "error", err)
+		//	httpClient = &http.Client{Timeout: 30 * time.Second}
+		//} else {
+		//	transport := &http.Transport{
+		//		TLSClientConfig: tlsConfig,
+		//	}
+		//	httpClient = &http.Client{
+		//		Transport: transport,
+		//		Timeout:   30 * time.Second,
+		//	}
+		//}
 
 	default:
 		httpClient = &http.Client{Timeout: 30 * time.Second}
@@ -91,30 +110,70 @@ func NewKaspiService(log *slog.Logger,
 	}
 }
 
-func loadTLSConfig(scheme string) (*tls.Config, error) {
-	certFile := fmt.Sprintf("certs/%s/client.crt", scheme)
-	keyFile := fmt.Sprintf("certs/%s/client.key", scheme)
-	caCertFile := fmt.Sprintf("certs/%s/ca.crt", scheme)
+func loadTLSConfig(log *slog.Logger, cfg *TLSConfig) (*http.Client, error) {
+	const op = "service.kaspi.loadTLSConfig"
 
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load client certificate: %w", err)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		},
 	}
 
-	caCert, err := os.ReadFile(caCertFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+	if !cfg.UseClientCert {
+		return &http.Client{
+			Timeout:   30 * time.Second,
+			Transport: tr,
+		}, nil
 	}
 
-	caCertPool := x509.NewCertPool()
-	if !caCertPool.AppendCertsFromPEM(caCert) {
-		return nil, errors.New("failed to append CA certificate")
+	var clientCert tls.Certificate
+
+	if cfg.PfxFile != "" {
+		pfxData, err := os.ReadFile(cfg.PfxFile) // ioutil
+		if err != nil {
+			return nil, fmt.Errorf("%s: failed to read PFX file: %w", op, err)
+		}
+
+		privateKey, certificate, caCerts, err := pkcs12.DecodeChain(pfxData, cfg.Password)
+		if err != nil {
+			return nil, fmt.Errorf("%s: failed to parse PFX data: %w", op, err)
+		}
+
+		clientCert.Certificate = make([][]byte, len(caCerts)+1)
+		clientCert.Certificate[0] = certificate.Raw
+		for i, ca := range caCerts {
+			clientCert.Certificate[i+1] = ca.Raw
+		}
+		clientCert.PrivateKey = privateKey
+	} else {
+		return nil, fmt.Errorf("%s: no valid certificate configuration provided", op)
 	}
 
-	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      caCertPool,
-		MinVersion:   tls.VersionTLS12,
+	tlsConfig := &tls.Config{
+		Certificates:       []tls.Certificate{clientCert},
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true,
+	}
+
+	if cfg.RootCAFile != "" {
+		rootCA, err := os.ReadFile(cfg.RootCAFile) // ioutil
+		if err != nil {
+			return nil, fmt.Errorf("%s: failed to read root CA file: %w", op, err)
+		}
+
+		rootCAPool := x509.NewCertPool()
+		if !rootCAPool.AppendCertsFromPEM(rootCA) {
+			return nil, fmt.Errorf("%s: failed to append root CA to cert pool", op)
+		}
+
+		tlsConfig.RootCAs = rootCAPool
+	}
+
+	tr.TLSClientConfig = tlsConfig
+
+	return &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
 	}, nil
 }
 
@@ -174,6 +233,8 @@ func (s *KaspiService) Request(ctx context.Context, method, path string, body, r
 	// Api-Key for request via first scheme
 	if s.scheme == "basic" {
 		req.Header.Set("Api-Key", s.apiKey)
+	} else {
+		log.Debug("using certificate auth", "scheme", s.scheme)
 	}
 
 	log.Debug("sending request")
@@ -194,14 +255,21 @@ func (s *KaspiService) Request(ctx context.Context, method, path string, body, r
 	var baseResp domain.BaseResponse
 	err = json.Unmarshal(respBody, &baseResp)
 	if err != nil {
+		fmt.Println(respBody)
 		return fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	if baseResp.StatusCode != 0 {
-		return &domain.KaspiError{
+		kaspiErr := &domain.KaspiError{
 			StatusCode: baseResp.StatusCode,
 			Message:    baseResp.Message,
 		}
+
+		if kaspiErr.StatusCode == -10000 {
+			log.Error("certificate authentication failed - check your client certificate setup")
+		}
+
+		return kaspiErr
 	}
 
 	if result != nil && baseResp.Data != nil {

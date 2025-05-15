@@ -116,6 +116,7 @@ func TestRegisterDeviceEnhanced(t *testing.T) {
 			"https://test.com",
 			"https://test.com",
 			"test-handlers-key",
+			nil,
 			mockSaver,
 		)
 

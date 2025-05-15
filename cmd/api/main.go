@@ -50,6 +50,13 @@ func main() {
 	}
 	defer storage.Stop()
 
+	tlsConfig := &service.TLSConfig{
+		Password:      cfg.KaspiAPI.KeyPass,
+		PfxFile:       cfg.KaspiAPI.PfxFile,
+		RootCAFile:    cfg.KaspiAPI.RootCAFile,
+		UseClientCert: true,
+	}
+
 	kaspiService := service.NewKaspiService(
 		log,
 		cfg.KaspiAPI.Scheme,
@@ -57,6 +64,8 @@ func main() {
 		cfg.KaspiAPI.BaseURLStd,
 		cfg.KaspiAPI.BaseURLEnh,
 		cfg.KaspiAPI.ApiKey,
+
+		tlsConfig,
 
 		storage,
 	)

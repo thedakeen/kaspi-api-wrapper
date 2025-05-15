@@ -17,6 +17,10 @@ func (s *KaspiService) CreateRefundQR(ctx context.Context, req domain.QRRefundCr
 		return nil, fmt.Errorf("refund functionality is not available in basic scheme")
 	}
 
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
+	}
+
 	const op = "service.kaspi.CreateRefundQR"
 
 	log := s.log.With(
@@ -48,6 +52,10 @@ func (s *KaspiService) CreateRefundQR(ctx context.Context, req domain.QRRefundCr
 func (s *KaspiService) GetRefundStatus(ctx context.Context, qrReturnID int64) (*domain.RefundStatusResponse, error) {
 	if s.scheme == "basic" {
 		return nil, fmt.Errorf("refund functionality is not available in basic scheme")
+	}
+
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
 	}
 
 	const op = "service.kaspi.GetRefundStatus"
@@ -86,6 +94,10 @@ func (s *KaspiService) GetCustomerOperations(ctx context.Context, req domain.Cus
 		return nil, fmt.Errorf("refund functionality is not available in basic scheme")
 	}
 
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
+	}
+
 	const op = "service.kaspi.GetCustomerOperations"
 
 	log := s.log.With(
@@ -118,6 +130,10 @@ func (s *KaspiService) GetCustomerOperations(ctx context.Context, req domain.Cus
 func (s *KaspiService) GetPaymentDetails(ctx context.Context, qrPaymentID int64, deviceToken string) (*domain.PaymentDetailsResponse, error) {
 	if s.scheme == "basic" {
 		return nil, fmt.Errorf("refund functionality is not available in basic scheme")
+	}
+
+	if s.scheme == "enhanced" {
+		return nil, domain.ErrUnsupportedFeature
 	}
 
 	const op = "service.kaspi.GetPaymentDetails"
